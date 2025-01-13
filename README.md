@@ -3,6 +3,14 @@
 ## 🚀 Overview
 A powerful, cross-browser Nostr client extension that keeps you connected to the decentralized social network anywhere, anytime!
 
+## 🌍 Supported Browsers
+- Chrome (88+)
+- Firefox (78+)
+- Safari (14+)
+- Edge (88+)
+- Opera (74+)
+- Brave (1.0+)
+
 ## ✨ Features
 - 🌐 Cross-browser compatibility (Chrome, Firefox, Safari, Edge, Brave)
 - 💫 Always online & accessible
@@ -18,21 +26,20 @@ A powerful, cross-browser Nostr client extension that keeps you connected to the
 - 📱 Responsive design
 
 ## 🛠️ Installation
-1. Visit our extension page on your preferred browser's store:
-   - [Chrome Web Store]()
-   - [Firefox Add-ons]()
-   - [Safari Extensions]()
-   - [Edge Add-ons]()
-   - [Opera Add-ons]()
-2. Click "Add to Browser"
-3. Configure your preferences
-4. Start using Nostr!
+Coming soon to browser extension stores!
 
 ## 🔑 Getting Started
 1. Generate or import your keys
 2. Set up your profile
 3. Find and follow interesting people
 4. Start posting and engaging with the community
+
+## 👨‍💻 Development
+```bash
+npm install
+npm run build
+npm test
+```
 
 ## 🤝 Contributing
 We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for details.
@@ -48,7 +55,7 @@ MIT License - see [LICENSE](LICENSE) for details
 
 ## 💖 Support
 - 📧 Email: support@nostrex.pro
-- ⚡ Lightning Address: name@getalby.com
+- ⚡ Lightning: name@getalby.com
 - 🐦 Nostr: npub1...
 
 ## 🌟 Star Us!
