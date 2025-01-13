@@ -1,50 +1,58 @@
-# React + TypeScript + Vite
+# 🌟 Universal Nostr Client Extension
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 🚀 Overview
+A powerful, cross-browser Nostr client extension that keeps you connected to the decentralized social network anywhere, anytime!
 
-Currently, two official plugins are available:
+## ✨ Features
+- 🌐 Cross-browser compatibility (Chrome, Firefox, Safari, Edge, Brave)
+- 💫 Always online & accessible
+- 🔐 Secure key management
+- 📝 Rich text posting with markdown support
+- 🖼️ Media sharing (images, videos, attachments)
+- 👥 Follow & connect with other users
+- 🔍 Advanced search capabilities
+- 🔔 Real-time notifications
+- 💬 Direct messaging
+- 🏷️ NIP support (NIP-01, NIP-02, NIP-04, NIP-05, etc.)
+- 🌈 Customizable themes
+- 📱 Responsive design
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🛠️ Installation
+1. Visit our extension page on your preferred browser's store:
+   - [Chrome Web Store]()
+   - [Firefox Add-ons]()
+   - [Safari Extensions]()
+   - [Edge Add-ons]()
+   - [Opera Add-ons]()
+2. Click "Add to Browser"
+3. Configure your preferences
+4. Start using Nostr!
 
-## Expanding the ESLint configuration
+## 🔑 Getting Started
+1. Generate or import your keys
+2. Set up your profile
+3. Find and follow interesting people
+4. Start posting and engaging with the community
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## 🤝 Contributing
+We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for details.
 
-- Configure the top-level `parserOptions` property like this:
+## 🔒 Security
+- End-to-end encryption for messages
+- Local key storage
+- Open-source for transparency
+- Regular security audits
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## 📜 License
+MIT License - see [LICENSE](LICENSE) for details
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## 💖 Support
+- 📧 Email: support@nostrex.pro
+- ⚡ Lightning Address: name@getalby.com
+- 🐦 Nostr: npub1...
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## 🌟 Star Us!
+If you find this project useful, please give it a star on GitHub!
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+---
+Built with ❤️ by the Nostr community
