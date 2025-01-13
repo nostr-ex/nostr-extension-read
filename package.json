@@ -1,0 +1,40 @@
+{
+  "name": "nostr-extension",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "homepage": "https://nostrex.pro",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:web && npm run build:chrome && npm run build:firefox && npm run build:safari && npm run build:edge && npm run build:opera",
+    "build:web": "tsc -b && vite build",
+    "build:chrome": "tsc -b && vite build --mode chrome",
+    "build:firefox": "tsc -b && vite build --mode firefox",
+    "build:safari": "tsc -b && vite build --mode safari",
+    "build:edge": "tsc -b && vite build --mode edge",
+    "build:opera": "tsc -b && vite build --mode opera",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "version": "node -p \"require('./package.json').version\""
+
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.6",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react-swc": "^3.7.2",
+    "eslint": "^9.18.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.18",
+    "gh-pages": "^6.3.0",
+    "globals": "^15.14.0",
+    "typescript": "~5.7.3",
+    "typescript-eslint": "^8.19.1",
+    "vite": "^6.0.7"
+  }
+}

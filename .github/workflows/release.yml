@@ -1,0 +1,101 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and Release Nostr Extension
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECT_NAME: "nostr-extension"
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      # Step 2: Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # Step 3: Clean up dependencies
+      - name: Clean Dependencies
+        run: |
+          rm -rf node_modules
+          rm -f package-lock.json
+
+      # Step 4: Install dependencies
+      - name: Install Dependencies
+        run: npm install
+
+      # Step 5: Determine version
+      - name: Set Version Variable
+        run: |
+          VERSION=$(npm run version --silent || echo "0.0.1")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      # Step 6: Build all versions
+      - name: Build Web & Extensions
+        run: npm run build
+
+      # Step 7: Package each output
+      - name: Package Outputs
+        run: |
+          zip -r nostr-web-${{ env.VERSION }}.zip dist
+          zip -r nostr-chrome-${{ env.VERSION }}.zip dist-chrome
+          zip -r nostr-firefox-${{ env.VERSION }}.zip dist-firefox
+          zip -r nostr-safari-${{ env.VERSION }}.zip dist-safari
+          zip -r nostr-edge-${{ env.VERSION }}.zip dist-edge
+          zip -r nostr-opera-${{ env.VERSION }}.zip dist-opera
+
+      # Step 8: Upload Artifacts
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: nostr-extension-${{ env.VERSION }}
+          path: |
+            nostr-web-${{ env.VERSION }}.zip
+            nostr-chrome-${{ env.VERSION }}.zip
+            nostr-firefox-${{ env.VERSION }}.zip
+            nostr-safari-${{ env.VERSION }}.zip
+            nostr-edge-${{ env.VERSION }}.zip
+            nostr-opera-${{ env.VERSION }}.zip
+
+      # Step 9: Create or Update GitHub Release
+      - name: Create or Update GitHub Release
+        run: |
+          if gh release view ${{ env.VERSION }}; then
+            gh release upload ${{ env.VERSION }} nostr-web-${{ env.VERSION }}.zip --clobber
+            gh release upload ${{ env.VERSION }} nostr-chrome-${{ env.VERSION }}.zip --clobber
+            gh release upload ${{ env.VERSION }} nostr-firefox-${{ env.VERSION }}.zip --clobber
+            gh release upload ${{ env.VERSION }} nostr-safari-${{ env.VERSION }}.zip --clobber
+            gh release upload ${{ env.VERSION }} nostr-edge-${{ env.VERSION }}.zip --clobber
+            gh release upload ${{ env.VERSION }} nostr-opera-${{ env.VERSION }}.zip --clobber
+          else
+            gh release create ${{ env.VERSION }} \
+              nostr-web-${{ env.VERSION }}.zip \
+              nostr-chrome-${{ env.VERSION }}.zip \
+              nostr-firefox-${{ env.VERSION }}.zip \
+              nostr-safari-${{ env.VERSION }}.zip \
+              nostr-edge-${{ env.VERSION }}.zip \
+              nostr-opera-${{ env.VERSION }}.zip \
+              --title "Nostr Extension v${{ env.VERSION }}" \
+              --draft \
+              --notes "Auto-generated release for version ${{ env.VERSION }}"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

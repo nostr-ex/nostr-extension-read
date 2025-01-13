@@ -1,0 +1,18 @@
+{
+  "manifest_version": 2,
+  "name": "NostrEx",
+  "version": "1.0.0",
+  "description": "Nostr Extension for Safari",
+  "browser_action": {
+    "default_popup": "index.html"
+  },
+  "permissions": ["storage"],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "browser_specific_settings": {
+    "safari": {
+      "strict_min_version": "14.0"
+    }
+  }
+}

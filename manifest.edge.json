@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "NostrEx",
+  "version": "1.0.0",
+  "description": "Nostr Extension for Edge",
+  "action": {
+    "default_popup": "index.html"
+  },
+  "permissions": ["storage"],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
