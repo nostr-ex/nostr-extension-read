@@ -40,16 +40,23 @@ export default defineConfig((env) => {
           name: 'copy-manifest',
           closeBundle() {
             const manifests: ManifestPaths = {
-              chrome: ['manifest.chrome.json', 'dist-chrome/manifest.json'],
-              firefox: ['manifest.firefox.json', 'dist-firefox/manifest.json'],
-              safari: ['manifest.safari.json', 'dist-safari/manifest.json'],
-              edge: ['manifest.edge.json', 'dist-edge/manifest.json'],
-              opera: ['manifest.opera.json', 'dist-opera/manifest.json'],
+              chrome: ['manifest/manifest.chrome.json', 'dist-chrome/manifest.json'],
+              firefox: ['manifest/manifest.firefox.json', 'dist-firefox/manifest.json'],
+              safari: ['manifest/manifest.safari.json', 'dist-safari/manifest.json'],
+              edge: ['manifest/manifest.edge.json', 'dist-edge/manifest.json'],
+              opera: ['manifest/manifest.opera.json', 'dist-opera/manifest.json'],
             };
             
             if (mode in manifests) {
               const [src, dest] = manifests[mode];
               copyFileSync(src, dest);
+              // Copy icons
+              ['16', '48', '128'].forEach(size => {
+                copyFileSync(
+                  `public/icons/icon${size}.png`,
+                  `${platforms[mode]}/icons/icon${size}.png`
+                );
+              });
             }
           }
         }

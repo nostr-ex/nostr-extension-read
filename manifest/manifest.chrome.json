@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Nostr Extension",
+  "version": "0.0.2",
+  "description": "Universal Nostr Client Extension",
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": [],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "/icons/icon16.png",
+    "48": "/icons/icon48.png",
+    "128": "/icons/icon128.png"
+  }
+}
