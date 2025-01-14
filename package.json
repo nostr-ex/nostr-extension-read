@@ -16,9 +16,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "version": "node -p \"require('./package.json').version\""
-
   },
   "dependencies": {
+    "@nostr-dev-kit/ndk": "^2.11.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
