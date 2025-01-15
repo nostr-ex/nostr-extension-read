@@ -28,7 +28,7 @@ function App() {
     showLogo: true,
     showSearchBox: true,
     showShortcuts: true,
-    shortcuts: [],
+    shortcuts: [], // Ensure this is initialized
   });
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -38,7 +38,8 @@ function App() {
   };
 
   const handleAddShortcut = (shortcut: { name: string; url: string; icon: string }) => {
-    updateSettings({ shortcuts: [...settings.shortcuts, shortcut] });
+    const updatedShortcuts = settings.shortcuts ? [...settings.shortcuts, shortcut] : [shortcut];
+    updateSettings({ shortcuts: updatedShortcuts });
   };
 
   return (
@@ -62,13 +63,7 @@ function App() {
 
         {settings.showShortcuts && (
           <div className="w-full max-w-2xl px-4 mt-4">
-            <Shortcuts isDarkMode={settings.isDarkMode} shortcuts={settings.shortcuts} />
-            <button 
-              onClick={() => setIsAddModalOpen(true)}
-              className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-            >
-              Add Shortcut
-            </button>
+            <Shortcuts isDarkMode={settings.isDarkMode} shortcuts={settings.shortcuts} setIsAddModalOpen={setIsAddModalOpen} />
           </div>
         )}
 

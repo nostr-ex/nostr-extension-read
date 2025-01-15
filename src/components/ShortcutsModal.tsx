@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
 interface ShortcutsModalProps {
+  isDarkMode: boolean;
   onClose: () => void;
   onAddShortcut: (shortcut: { name: string; url: string; icon: string }) => void;
 }

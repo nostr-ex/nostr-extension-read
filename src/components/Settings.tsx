@@ -35,9 +35,9 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
           className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm"
           onClick={(e) => e.target === e.currentTarget && setIsOpen(false)}
         >
-          <div className="bg-gray-800 rounded-xl p-6 w-11/12 max-w-lg shadow-2xl transition-all duration-300 animate-modalEntry"
+          <div className="bg-gray-800 rounded-xl p-6 w-11/12 max-w-lg max-h-[80vh] shadow-2xl transition-all duration-300 animate-modalEntry"
             onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
+            <div className="flex justify-between items-center border-b border-gray-700 pb-4 sticky top-0 bg-gray-800 z-10">
               <h2 className="text-xl font-bold text-white tracking-wide">Settings</h2>
               <button 
                 onClick={() => setIsOpen(false)}
@@ -47,10 +47,9 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
               </button>
             </div>
             
-            <div className="space-y-6">
+            <div className="modal-body space-y-6 overflow-y-auto max-h-[60vh] p-4">
               <div className="space-y-4">
-                <h3 className="text-blue-400 text-sm font-semibold uppercase tracking-wider">Display</h3>
-               
+                
                 <div className="space-y-4 py-3 hover:bg-gray-700/30 px-3 rounded-lg transition-colors">
                   <div className="space-y-1">
                     <label className="text-white font-medium block">Profile Name</label>
@@ -163,32 +162,30 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
                     <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.showShortcuts ? 'translate-x-5' : ''}`}></span>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="mt-8 pt-4 border-t border-gray-700">
-              <div className="flex items-center justify-between py-3 hover:bg-gray-700/30 px-3 rounded-lg transition-colors">
-                <div className="space-y-1">
-                  <label className="text-white font-medium block">Dark Mode</label>
-                  <span className="text-gray-400 text-sm">Choose your preferred theme</span>
-                </div>
-                <div 
-                  className="h-6 w-11 rounded-full relative bg-gray-600 cursor-pointer transition-colors"
-                  onClick={() => onSettingsChange({ isDarkMode: !settings.isDarkMode })}
-                >
-                  <input 
-                    type="checkbox" 
-                    checked={settings.isDarkMode}
-                    onChange={() => {}}
-                    className="sr-only peer" 
-                  />
-                  <span className={`absolute inset-0 rounded-full transition-colors ${settings.isDarkMode ? 'bg-blue-600' : ''}`}></span>
-                  <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.isDarkMode ? 'translate-x-5' : ''}`}></span>
+                <div className="flex items-center justify-between py-3 hover:bg-gray-700/30 px-3 rounded-lg transition-colors">
+                  <div className="space-y-1">
+                    <label className="text-white font-medium block">Dark Mode</label>
+                    <span className="text-gray-400 text-sm">Choose your preferred theme</span>
+                  </div>
+                  <div 
+                    className="h-6 w-11 rounded-full relative bg-gray-600 cursor-pointer transition-colors"
+                    onClick={() => onSettingsChange({ isDarkMode: !settings.isDarkMode })}
+                  >
+                    <input 
+                      type="checkbox" 
+                      checked={settings.isDarkMode}
+                      onChange={() => {}}
+                      className="sr-only peer" 
+                    />
+                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.isDarkMode ? 'bg-blue-600' : ''}`}></span>
+                    <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.isDarkMode ? 'translate-x-5' : ''}`}></span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 pt-4 border-t border-gray-700 flex justify-end space-x-3">
+            <div className="pt-4 border-t border-gray-700 flex justify-end space-x-3 sticky bottom-0 bg-gray-800 z-10">
               <button 
                 onClick={() => setIsOpen(false)}
                 className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
