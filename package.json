@@ -21,6 +21,7 @@
     "@heroicons/react": "^2.2.0",
     "@mui/material": "^6.4.0",
     "@nostr-dev-kit/ndk": "^2.11.0",
+    "@nostr-dev-kit/ndk-cache-dexie": "^2.5.9",
     "@types/crypto-js": "^4.2.2",
     "crypto-js": "^4.2.0",
     "react": "^19.0.0",

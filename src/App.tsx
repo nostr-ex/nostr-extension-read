@@ -5,8 +5,10 @@ import Clock from "./components/Clock";
 import SearchBox from "./components/SearchBox";
 import Shortcuts from "./components/Shortcuts";
 import ShortcutsModal from "./components/ShortcutsModal";
+import Profile from './components/Profile';
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { useState } from 'react';
+import { useNostr } from './hooks/useNostr';
 
 interface Settings {
   showClock: boolean;
@@ -32,6 +34,7 @@ function App() {
   });
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const { profile } = useNostr();
 
   const updateSettings = (updates: Partial<Settings>) => {
     setSettings(prev => ({ ...prev, ...updates }));
@@ -71,6 +74,10 @@ function App() {
           settings={settings}
           onSettingsChange={updateSettings}
         />
+
+        {profile && profile.profile?.image && (
+          <Profile image={profile.profile.image} />
+        )}
 
         {isAddModalOpen && (
           <ShortcutsModal 
