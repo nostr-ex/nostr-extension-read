@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Cog6ToothIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { usePublicKey, usePrivateKey } from '../hooks/useLocalStorage';
+import { useNostr } from '../hooks/useNostr';
 
 interface SettingsProps {
   settings: {
@@ -19,9 +20,17 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
   const [isOpen, setIsOpen] = useState(false);
   const [publicKey, setPublicKey] = usePublicKey();
   const [privateKey, setPrivateKey] = usePrivateKey();
+  const { fetchProfile } = useNostr();
 
   const handleSave = () => {
     setIsOpen(false);
+  };
+
+  const handlePublicKeyChange = async (value: string) => {
+    setPublicKey(value);
+    if (value) {
+      await fetchProfile(value);
+    }
   };
 
   return (
@@ -192,7 +201,7 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
                     <input 
                       type="text" 
                       value={publicKey}
-                      onChange={(e) => setPublicKey(e.target.value)}
+                      onChange={(e) => handlePublicKeyChange(e.target.value)}
                       className="w-full bg-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                       placeholder="Enter your public key"
                     />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { usePublicKey } from './useLocalStorage';
 import NostrClient from '../utils/NostrRelayPool';
 import type { NDKUser } from '@nostr-dev-kit/ndk';
@@ -8,27 +8,26 @@ export function useNostr() {
   const [profile, setProfile] = useState<NDKUser | null>(null);
   const [publicKey] = usePublicKey();
 
-  useEffect(() => {
-    async function fetchProfile() {
-      if (!publicKey) {
-        console.error('Public key is not set');
-        return;
+  const fetchProfile = useCallback(async (key: string) => {
+    try {
+      await NostrClient.initialize();
+      const normalizedKey = normalizePublicKey(key);
+      const profileData = await NostrClient.getUserProfile(normalizedKey);
+      if (profileData) {
+        setProfile(profileData);
+        return profileData;
       }
-      try {
-        await NostrClient.initialize();
-        const normalizedKey = normalizePublicKey(publicKey);
-        const profileData = await NostrClient.getUserProfile(normalizedKey);
-        if (profileData) {
-          setProfile(profileData);
-        } else {
-          console.error('Profile data is null or undefined');
-        }
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
     }
-    fetchProfile();
-  }, [publicKey]);
+    return null;
+  }, []);
 
-  return { profile };
+  useEffect(() => {
+    if (publicKey) {
+      fetchProfile(publicKey);
+    }
+  }, [publicKey, fetchProfile]);
+
+  return { profile, fetchProfile };
 }

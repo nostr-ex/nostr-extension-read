@@ -76,7 +76,10 @@ function App() {
         />
 
         {profile && profile.profile?.image && (
-          <Profile image={profile.profile.image} />
+          <Profile 
+            image={profile.profile.image} 
+            name={profile.profile?.name || profile.profile?.displayName}
+          />
         )}
 
         {isAddModalOpen && (
