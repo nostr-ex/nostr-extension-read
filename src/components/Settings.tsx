@@ -37,7 +37,7 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-5 right-5 bg-blue-600 hover:bg-blue-700 rounded-full p-4 transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-blue-500/30"
+        className="fixed bottom-5 right-5 bg-blue-600 hover:bg-blue-700 rounded-full p-2 transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-blue-500/30"
       >
         <Cog6ToothIcon className="h-8 w-8 text-white" />
       </button>

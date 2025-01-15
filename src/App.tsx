@@ -35,13 +35,34 @@ function App() {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { profile } = useNostr();
+  const [editingShortcut, setEditingShortcut] = useState<{ data: { name: string; url: string; icon: string }, index: number } | null>(null);
 
   const updateSettings = (updates: Partial<Settings>) => {
     setSettings(prev => ({ ...prev, ...updates }));
   };
 
   const handleAddShortcut = (shortcut: { name: string; url: string; icon: string }) => {
-    const updatedShortcuts = settings.shortcuts ? [...settings.shortcuts, shortcut] : [shortcut];
+    if (editingShortcut) {
+      // Update existing shortcut
+      const updatedShortcuts = [...settings.shortcuts];
+      updatedShortcuts[editingShortcut.index] = shortcut;
+      updateSettings({ shortcuts: updatedShortcuts });
+      setEditingShortcut(null);
+    } else {
+      // Add new shortcut
+      const updatedShortcuts = settings.shortcuts ? [...settings.shortcuts, shortcut] : [shortcut];
+      updateSettings({ shortcuts: updatedShortcuts });
+    }
+    setIsAddModalOpen(false);
+  };
+
+  const handleEdit = (shortcut: { name: string; url: string; icon: string }, index: number) => {
+    setEditingShortcut({ data: shortcut, index });
+    setIsAddModalOpen(true);
+  };
+
+  const handleDelete = (index: number) => {
+    const updatedShortcuts = settings.shortcuts.filter((_, i) => i !== index);
     updateSettings({ shortcuts: updatedShortcuts });
   };
 
@@ -50,7 +71,7 @@ function App() {
       <div className={`min-h-screen min-w-full relative overflow-hidden flex flex-col items-center justify-center`}>
         {settings.showLogo && (
           <div className="top-5 mb-8">
-            <img src={nostrexLogo} className="w-16 h-16 opacity-50 hover:opacity-100 transition-opacity" alt="NostrEx logo" />
+            <img src={nostrexLogo} className="w-20 h-20  hover:opacity-70 transition-opacity" alt="NostrEx logo" />
           </div>
         )}
         
@@ -66,7 +87,7 @@ function App() {
 
         {settings.showShortcuts && (
           <div className="w-full max-w-2xl px-4 mt-4">
-            <Shortcuts isDarkMode={settings.isDarkMode} shortcuts={settings.shortcuts} setIsAddModalOpen={setIsAddModalOpen} />
+            <Shortcuts isDarkMode={settings.isDarkMode} shortcuts={settings.shortcuts} setIsAddModalOpen={setIsAddModalOpen} onEdit={handleEdit} onDelete={handleDelete} />
           </div>
         )}
 
@@ -85,8 +106,12 @@ function App() {
         {isAddModalOpen && (
           <ShortcutsModal 
             isDarkMode={settings.isDarkMode} 
-            onClose={() => setIsAddModalOpen(false)}
+            onClose={() => {
+              setIsAddModalOpen(false);
+              setEditingShortcut(null);
+            }}
             onAddShortcut={handleAddShortcut}
+            editingShortcut={editingShortcut?.data}
           />
         )}
       </div>
