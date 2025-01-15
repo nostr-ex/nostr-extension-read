@@ -18,9 +18,12 @@
     "version": "node -p \"require('./package.json').version\""
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@mui/material": "^6.4.0",
     "@nostr-dev-kit/ndk": "^2.11.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-draggable": "^4.4.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
