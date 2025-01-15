@@ -16,6 +16,7 @@ export default defineConfig((env) => {
   interface BuildOptions {
     outDir: string;
     emptyOutDir: boolean;
+    sourcemap: boolean;
     rollupOptions: {
       input: {
         index: string;

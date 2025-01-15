@@ -1,19 +1,14 @@
-import { NDKProvider } from './context/NDKContext';
-import Header from './components/Header';
-// import MainContent from './components/MainContent';
-import Footer from './components/Footer';
+import nostrexLogo from "./assets/nostrex.svg";
+import "./App.css";
 
 function App() {
   return (
-    <NDKProvider>
-      <div className="min-h-screen text-white flex flex-col">
-        <div className="container mx-auto px-4 py-8 flex-1 flex flex-col">
-          <Header />
-          {/* <MainContent /> */}
-          <Footer />
-        </div>
+    <>
+      <div>
+        <img src={nostrexLogo} className="logo nostrex" alt="NostrEx logo" />
       </div>
-    </NDKProvider>
+      <h1>Nostr Extension</h1>
+    </>
   );
 }
 
