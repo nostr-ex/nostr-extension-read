@@ -24,6 +24,7 @@
     "@nostr-dev-kit/ndk-cache-dexie": "^2.5.9",
     "@types/crypto-js": "^4.2.2",
     "crypto-js": "^4.2.0",
+    "nostr-tools": "^2.10.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-draggable": "^4.4.5"

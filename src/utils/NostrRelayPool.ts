@@ -1,5 +1,6 @@
 import NDK, { NDKEvent, NDKFilter, NDKUser } from '@nostr-dev-kit/ndk';
 import NDKCacheAdapterDexie from "@nostr-dev-kit/ndk-cache-dexie";
+import { normalizePublicKey } from './NostrUtils';
 
 class NostrClient {
     private static instance: NostrClient;
@@ -50,7 +51,11 @@ class NostrClient {
 
     public async getUserProfile(pubkey: string): Promise<NDKUser | null> {
         try {
-            const user = this.ndk.getUser({ pubkey });
+            const normalizedPubkey = normalizePublicKey(pubkey);
+            if (!normalizedPubkey) {
+                throw new Error('Invalid public key');
+            }
+            const user = this.ndk.getUser({ pubkey: normalizedPubkey });
             await user.fetchProfile();
             return user;
         } catch (error) {
