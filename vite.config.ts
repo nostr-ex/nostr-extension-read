@@ -76,6 +76,7 @@ export default defineConfig((env) => {
             
           },
         },
+        sourcemap: true
       },
     };
 
