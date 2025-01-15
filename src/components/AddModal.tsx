@@ -55,7 +55,7 @@ export default function AddModal({ isOpen, onClose, onSave, editingShortcut, isD
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600"
+              className="px-4 py-2 rounded-md bg-purple-500 text-white hover:bg-purple-600"
             >
               {editingShortcut ? 'Save Changes' : 'Add Shortcut'}
             </button>

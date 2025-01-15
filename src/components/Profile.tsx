@@ -41,7 +41,7 @@ const Profile: React.FC<ProfileProps> = ({ image, name, onSignOut }) => {
       <div className="fixed top-4 right-4 z-[100]" ref={menuRef}>
         <button 
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white hover:border-blue-500 hover:scale-105 transition-all duration-200 focus:outline-none bg-gray-800 shadow-lg hover:shadow-blue-500/20"
+          className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white hover:border-purple-500 hover:scale-105 transition-all duration-200 focus:outline-none bg-gray-800 shadow-lg hover:shadow-purple-500/20"
         >
           <img 
             src={image} 
@@ -63,14 +63,14 @@ const Profile: React.FC<ProfileProps> = ({ image, name, onSignOut }) => {
                 </div>
               )}
               <a href="#" className="group flex items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-700/50 transition-all duration-200">
-                <UserCircleIcon className="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-400 transition-colors" />
+                <UserCircleIcon className="w-5 h-5 mr-3 text-gray-400 group-hover:text-purple-400 transition-colors" />
                 View Profile
               </a>
               <span role='button'
                 onClick={handleSettingsClick}
                 className="group flex w-full items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-700/50 transition-all duration-200"
               >
-                <CogIcon className="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-400 transition-colors" />
+                <CogIcon className="w-5 h-5 mr-3 text-gray-400 group-hover:text-purple-400 transition-colors" />
                 Settings
               </span>
               <div className="border-t border-gray-700/50 my-1"></div>

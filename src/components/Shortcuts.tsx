@@ -61,7 +61,7 @@ export default function Shortcuts({ isDarkMode, shortcuts = [], setIsAddModalOpe
                     <div
                       className={`px-4 py-2 text-sm cursor-pointer
                         ${isDarkMode ? 'text-gray-200 hover:text-white' : 'text-gray-600 hover:text-black'}
-                        hover:bg-opacity-10 hover:bg-blue-500`}
+                        hover:bg-opacity-10 hover:bg-purple-500`}
                       onClick={() => {
                         setIsAddModalOpen(true);
                         onEdit?.(shortcut, index);

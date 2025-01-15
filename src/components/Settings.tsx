@@ -37,7 +37,7 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-5 right-5 bg-blue-600 hover:bg-blue-700 rounded-full p-2 transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-blue-500/30"
+        className="fixed bottom-5 right-5 bg-purple-600 hover:bg-purple-700 rounded-full p-2 transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-purple-500/30"
       >
         <Cog6ToothIcon className="h-8 w-8 text-white" />
       </button>
@@ -69,7 +69,11 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
                       type="text" 
                       value={settings.profileName}
                       onChange={(e) => onSettingsChange({ profileName: e.target.value })}
-                      className="w-full bg-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                      className={`w-full px-4 py-3 rounded-lg outline-none transition-all duration-200
+                        ${settings.isDarkMode 
+                          ? 'bg-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 border-gray-600' 
+                          : 'bg-gray-50 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-purple-500 border-gray-300'
+                        } border focus:border-purple-500`}
                       placeholder="Enter your name"
                     />
                   </div>
@@ -90,7 +94,7 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
                       onChange={() => {}}
                       className="sr-only peer" 
                     />
-                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.showClock ? 'bg-blue-600' : ''}`}></span>
+                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.showClock ? 'bg-purple-600' : ''}`}></span>
                     <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.showClock ? 'translate-x-5' : ''}`}></span>
                   </div>
                 </div>
@@ -110,7 +114,7 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
                       onChange={() => {}}
                       className="sr-only peer" 
                     />
-                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.showLogo ? 'bg-blue-600' : ''}`}></span>
+                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.showLogo ? 'bg-purple-600' : ''}`}></span>
                     <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.showLogo ? 'translate-x-5' : ''}`}></span>
                   </div>
                 </div>
@@ -130,7 +134,7 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
                       onChange={() => {}}
                       className="sr-only peer" 
                     />
-                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.notifications ? 'bg-blue-600' : ''}`}></span>
+                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.notifications ? 'bg-purple-600' : ''}`}></span>
                     <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.notifications ? 'translate-x-5' : ''}`}></span>
                   </div>
                 </div>
@@ -150,7 +154,7 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
                       onChange={() => {}}
                       className="sr-only peer" 
                     />
-                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.showSearchBox ? 'bg-blue-600' : ''}`}></span>
+                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.showSearchBox ? 'bg-purple-600' : ''}`}></span>
                     <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.showSearchBox ? 'translate-x-5' : ''}`}></span>
                   </div>
                 </div>
@@ -170,7 +174,7 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
                       onChange={() => {}}
                       className="sr-only peer" 
                     />
-                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.showShortcuts ? 'bg-blue-600' : ''}`}></span>
+                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.showShortcuts ? 'bg-purple-600' : ''}`}></span>
                     <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.showShortcuts ? 'translate-x-5' : ''}`}></span>
                   </div>
                 </div>
@@ -190,7 +194,7 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
                       onChange={() => {}}
                       className="sr-only peer" 
                     />
-                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.isDarkMode ? 'bg-blue-600' : ''}`}></span>
+                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.isDarkMode ? 'bg-purple-600' : ''}`}></span>
                     <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.isDarkMode ? 'translate-x-5' : ''}`}></span>
                   </div>
                 </div>
@@ -202,7 +206,11 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
                       type="text" 
                       value={publicKey}
                       onChange={(e) => handlePublicKeyChange(e.target.value)}
-                      className="w-full bg-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                      className={`w-full px-4 py-3 rounded-lg outline-none transition-all duration-200
+                        ${settings.isDarkMode 
+                          ? 'bg-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 border-gray-600' 
+                          : 'bg-gray-50 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-purple-500 border-gray-300'
+                        } border focus:border-purple-500`}
                       placeholder="Enter your public key"
                     />
                   </div>
@@ -215,7 +223,11 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
                       type="text" 
                       value={privateKey}
                       onChange={(e) => setPrivateKey(e.target.value)}
-                      className="w-full bg-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                      className={`w-full px-4 py-3 rounded-lg outline-none transition-all duration-200
+                        ${settings.isDarkMode 
+                          ? 'bg-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 border-gray-600' 
+                          : 'bg-gray-50 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-purple-500 border-gray-300'
+                        } border focus:border-purple-500`}
                       placeholder="Enter your private key"
                     />
                   </div>
@@ -233,7 +245,7 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
               </button>
               <button 
                 onClick={handleSave}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
               >
                 Save Changes
               </button>

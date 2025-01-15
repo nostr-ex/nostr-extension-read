@@ -1,4 +1,5 @@
 import { FormEvent } from 'react';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 interface SearchBoxProps {
   isDarkMode: boolean;
@@ -18,17 +19,19 @@ export default function SearchBox({ isDarkMode }: SearchBoxProps) {
         <input
           type="search"
           name="q"
-          className={`w-full px-6 py-4 rounded-full ${isDarkMode ? 'bg-gray-800 text-white placeholder-gray-400 border-gray-600' : 'bg-gray-200 text-black placeholder-gray-600 border-gray-300'} outline-none focus:border-blue-500 transition-all`}
+          className={`w-full px-6 py-4 rounded-full ${isDarkMode ? 'bg-gray-800 text-white placeholder-gray-400 border-gray-600' : 'bg-gray-200 text-black placeholder-gray-600 border-gray-300'} outline-none focus:border-purple-500 transition-all`}
           placeholder="Search Google..."
         />
-        <button 
-          type="submit"
-          className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full backdrop-blur-md ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} shadow-lg transition-all duration-300 hover:bg-gray-400 hover:shadow-xl`}
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </button>
+<button 
+  type="submit"
+
+  className="absolute right-[8px] top-1/2 -translate-y-1/2  bg-purple-500 hover:bg-purple-700 rounded-full p-2 transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-purple-500/30" 
+
+>
+<MagnifyingGlassIcon className="h-5 w-5 text-white" />
+
+</button>
+
       </div>
     </form>
   );
