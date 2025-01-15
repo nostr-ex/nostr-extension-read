@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Cog6ToothIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { usePublicKey, usePrivateKey } from '../hooks/useLocalStorage';
 
 interface SettingsProps {
   settings: {
@@ -16,6 +17,8 @@ interface SettingsProps {
 
 export default function Settings({ settings, onSettingsChange }: SettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [publicKey, setPublicKey] = usePublicKey();
+  const [privateKey, setPrivateKey] = usePrivateKey();
 
   const handleSave = () => {
     setIsOpen(false);
@@ -182,6 +185,33 @@ export default function Settings({ settings, onSettingsChange }: SettingsProps) 
                     <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.isDarkMode ? 'translate-x-5' : ''}`}></span>
                   </div>
                 </div>
+
+                <div className="space-y-4 py-3 hover:bg-gray-700/30 px-3 rounded-lg transition-colors">
+                  <div className="space-y-1">
+                    <label className="text-white font-medium block">Public Key</label>
+                    <input 
+                      type="text" 
+                      value={publicKey}
+                      onChange={(e) => setPublicKey(e.target.value)}
+                      className="w-full bg-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                      placeholder="Enter your public key"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 py-3 hover:bg-gray-700/30 px-3 rounded-lg transition-colors">
+                  <div className="space-y-1">
+                    <label className="text-white font-medium block">Private Key</label>
+                    <input 
+                      type="text" 
+                      value={privateKey}
+                      onChange={(e) => setPrivateKey(e.target.value)}
+                      className="w-full bg-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                      placeholder="Enter your private key"
+                    />
+                  </div>
+                </div>
+
               </div>
             </div>
 

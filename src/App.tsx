@@ -51,7 +51,7 @@ function App() {
           </div>
         )}
         
-        {settings.showClock && <Clock show={settings.showClock} isDarkMode={settings.isDarkMode} />}
+        {settings.showClock && <Clock show={settings.showClock} isDarkMode={settings.isDarkMode} profileName={settings.profileName} />}
         
         {settings.showClock && <div className="h-8"></div>}
         

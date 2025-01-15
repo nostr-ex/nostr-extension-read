@@ -86,3 +86,23 @@ button:focus-visible {
 .animate-modalEntry {
   animation: modalEntry 0.2s ease-out;
 }
+
+.settings {
+  padding: 1em;
+}
+
+.form-group {
+  margin-bottom: 1em;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5em;
+}
+
+input {
+  width: 100%;
+  padding: 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
