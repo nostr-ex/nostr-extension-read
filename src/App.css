@@ -1,15 +1,8 @@
-body {
-  @apply bg-gray-900 text-gray-100;
-}
-
-.dark {
-  @apply bg-gray-900 text-gray-100;
-}
-
-.light {
-  @apply bg-white text-gray-900;
-}
-
 .logo {
-  @apply transition-all duration-300 hover:drop-shadow-lg;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 0.75rem currentColor);
 }

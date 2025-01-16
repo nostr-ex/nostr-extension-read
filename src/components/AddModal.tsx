@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
 
 interface Shortcut {
   name: string;
@@ -14,7 +15,7 @@ interface AddModalProps {
   isDarkMode: boolean;
 }
 
-export default function AddModal({ isOpen, onClose, onSave, editingShortcut, isDarkMode }: AddModalProps) {
+export default function AddModal({ isOpen, onClose, onSave, editingShortcut }: AddModalProps) {
   const [name, setName] = useState(editingShortcut?.name || '');
   const [url, setUrl] = useState(editingShortcut?.url || '');
   const [icon, setIcon] = useState(editingShortcut?.icon || '');
@@ -35,33 +36,42 @@ export default function AddModal({ isOpen, onClose, onSave, editingShortcut, isD
     setIcon('');
   };
 
-  if (!isOpen) return null;
-  
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
-        <h3 className="text-lg font-medium mb-4">
-          {editingShortcut ? 'Edit Shortcut' : 'Add New Shortcut'}
-        </h3>
+    <Dialog open={isOpen} onClose={onClose}>
+      <DialogTitle>{editingShortcut ? 'Edit Shortcut' : 'Add New Shortcut'}</DialogTitle>
+      <DialogContent>
         <form onSubmit={handleSubmit}>
-          {/* ...existing form fields... */}
-          <div className="flex justify-end gap-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-md bg-gray-500 text-white hover:bg-gray-600"
-            >
+          <TextField
+            label="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="URL"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Icon"
+            value={icon}
+            onChange={(e) => setIcon(e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          <DialogActions>
+            <Button onClick={onClose} color="secondary">
               Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-md bg-purple-500 text-white hover:bg-purple-600"
-            >
+            </Button>
+            <Button type="submit" color="primary">
               {editingShortcut ? 'Save Changes' : 'Add Shortcut'}
-            </button>
-          </div>
+            </Button>
+          </DialogActions>
         </form>
-       </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

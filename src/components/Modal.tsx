@@ -1,4 +1,6 @@
 import React from 'react';
+import { Dialog, DialogContent, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface ModalProps {
   children: React.ReactNode;
@@ -7,17 +9,23 @@ interface ModalProps {
 
 const Modal: React.FC<ModalProps> = ({ children, onClose }) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-      <div className="bg-gray-800 rounded-lg p-6 max-w-lg w-full mx-4 relative">
-        <button
+    <Dialog open onClose={onClose}>
+      <DialogContent>
+        <IconButton
+          aria-label="close"
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white"
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
         >
-          ×
-        </button>
+          <CloseIcon />
+        </IconButton>
         {children}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

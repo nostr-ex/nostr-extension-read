@@ -1,259 +1,475 @@
-import { useState } from 'react';
-import { Cog6ToothIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { usePublicKey, usePrivateKey } from '../hooks/useLocalStorage';
-import { useNostr } from '../hooks/useNostr';
+import {
+  Box,
+  Paper,
+  Typography,
+  Switch,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  Divider,
+  IconButton,
+  TextField,
+  Button,
+  Modal,
+} from '@mui/material';
 
-interface SettingsProps {
-  settings: {
-    showClock: boolean;
-    isDarkMode: boolean;
-    notifications: boolean;
-    profileName: string;
-    showLogo: boolean;
-    showSearchBox: boolean;
-    showShortcuts: boolean;
-  };
-  onSettingsChange: (updates: Partial<SettingsProps['settings']>) => void;
+// Icons
+import {
+  Palette,
+  Language,
+  Security,
+  Storage,
+  Speed,
+  CloudSync,
+  Delete,
+  RestartAlt,
+  Close,
+  ViewModule,
+  Timer,
+  SearchRounded,
+  AccountCircle,
+  Image,
+  VpnKey,
+} from '@mui/icons-material';
+
+import type { Settings } from '../types/settings';
+import { DEFAULT_SETTINGS } from '../types/settings';
+import { useState, useEffect } from 'react';
+import { styled } from '@mui/material/styles';
+
+interface SettingSectionProps {
+  title: string;
+  children: React.ReactNode;
 }
 
-export default function Settings({ settings, onSettingsChange }: SettingsProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [publicKey, setPublicKey] = usePublicKey();
-  const [privateKey, setPrivateKey] = usePrivateKey();
-  const { fetchProfile } = useNostr();
+function SettingSection({ title, children }: SettingSectionProps) {
+  return (
+    <Paper sx={{ mb: 3, p: 0 }}>
+      <Typography variant="h6" sx={{ p: 2, pb: 1 }}>
+        {title}
+      </Typography>
+      <List disablePadding>
+        {children}
+      </List>
+    </Paper>
+  );
+}
 
-  const handleSave = () => {
-    setIsOpen(false);
+interface SettingsModalProps {
+  open: boolean;
+  onClose: () => void;
+  settings: Settings;
+  onSettingsChange: (updates: Partial<Settings>) => void;
+}
+
+const ScrollContent = styled(Box)(({ theme }) => ({
+  overflowY: 'auto',
+  overflowX: 'hidden',
+  flex: 1,
+  '&::-webkit-scrollbar': {
+    width: '12px',
+    backgroundColor: theme.palette.mode === 'dark' 
+      ? 'rgba(255, 255, 255, 0.05)'
+      : 'rgba(0, 0, 0, 0.05)',
+    borderRadius: '6px',
+  },
+  '&::-webkit-scrollbar-thumb': {
+    backgroundColor: theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.2)'
+      : 'rgba(0, 0, 0, 0.2)',
+    borderRadius: '6px',
+    border: '2px solid transparent',
+    backgroundClip: 'padding-box',
+    '&:hover': {
+      backgroundColor: theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.3)'
+        : 'rgba(0, 0, 0, 0.3)',
+    },
+  },
+  '&::-webkit-scrollbar-track': {
+    backgroundColor: 'transparent',
+  },
+}));
+
+export default function Settings({ open, onClose, settings, onSettingsChange }: SettingsModalProps) {
+  const [localSettings, setLocalSettings] = useState(settings);
+
+  useEffect(() => {
+    setLocalSettings(settings);
+  }, [settings]);
+
+  const handleChange = (key: keyof Settings, value: Settings[keyof Settings]) => {
+    setLocalSettings(prev => ({
+      ...prev,
+      [key]: value
+    }));
   };
 
-  const handlePublicKeyChange = async (value: string) => {
-    setPublicKey(value);
-    if (value) {
-      await fetchProfile(value);
-    }
+  // Update theme handling
+  const handleThemeChange = (value: Settings['theme']) => {
+    handleChange('theme', value);
   };
 
   return (
-    <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-5 right-5 bg-purple-600 hover:bg-purple-700 rounded-full p-2 transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-purple-500/30"
+    <Modal
+      open={open}
+      onClose={() => onClose()}
+      disableAutoFocus
+      disableEnforceFocus
+      disableRestoreFocus
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Box
+        sx={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: 800,
+          maxHeight: '90vh',
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          boxShadow: 24,
+          display: 'flex',
+          flexDirection: 'column',
+        }}
       >
-        <Cog6ToothIcon className="h-8 w-8 text-white" />
-      </button>
-
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm"
-          onClick={(e) => e.target === e.currentTarget && setIsOpen(false)}
+        {/* Fixed Header */}
+        <Box
+          sx={{
+            p: 3,
+            borderBottom: 1,
+            borderColor: 'divider',
+            position: 'sticky',
+            top: 0,
+            bgcolor: 'background.paper',
+            zIndex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
         >
-          <div className="bg-gray-800 rounded-xl p-6 w-11/12 max-w-lg max-h-[80vh] shadow-2xl transition-all duration-300 animate-modalEntry"
-            onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center border-b border-gray-700 pb-4 sticky top-0 bg-gray-800 z-10">
-              <h2 className="text-xl font-bold text-white tracking-wide">Settings</h2>
-              <button 
-                onClick={() => setIsOpen(false)}
-                className="text-gray-400 hover:text-white p-1 rounded-lg transition-colors duration-200 hover:bg-gray-700"
-              >
-                <XMarkIcon className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <div className="modal-body space-y-6 overflow-y-auto max-h-[60vh] p-4">
-              <div className="space-y-4">
-                
-                <div className="space-y-4 py-3 hover:bg-gray-700/30 px-3 rounded-lg transition-colors">
-                  <div className="space-y-1">
-                    <label className="text-white font-medium block">Profile Name</label>
-                    <input 
-                      type="text" 
-                      value={settings.profileName}
-                      onChange={(e) => onSettingsChange({ profileName: e.target.value })}
-                      className={`w-full px-4 py-3 rounded-lg outline-none transition-all duration-200
-                        ${settings.isDarkMode 
-                          ? 'bg-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 border-gray-600' 
-                          : 'bg-gray-50 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-purple-500 border-gray-300'
-                        } border focus:border-purple-500`}
-                      placeholder="Enter your name"
-                    />
-                  </div>
-                </div>
-               
-                <div className="flex items-center justify-between py-3 hover:bg-gray-700/30 px-3 rounded-lg transition-colors">
-                  <div className="space-y-1">
-                    <label className="text-white font-medium block">Show Clock</label>
-                    <span className="text-gray-400 text-sm">Display local time in center</span>
-                  </div>
-                  <div 
-                    className="h-6 w-11 rounded-full relative bg-gray-600 cursor-pointer transition-colors"
-                    onClick={() => onSettingsChange({ showClock: !settings.showClock })}
-                  >
-                    <input 
-                      type="checkbox" 
-                      checked={settings.showClock}
-                      onChange={() => {}}
-                      className="sr-only peer" 
-                    />
-                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.showClock ? 'bg-purple-600' : ''}`}></span>
-                    <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.showClock ? 'translate-x-5' : ''}`}></span>
-                  </div>
-                </div>
+          <Typography variant="h4" sx={{ fontWeight: 500 }}>
+            Settings
+          </Typography>
+          <IconButton onClick={() => onClose()}>
+            <Close />
+          </IconButton>
+        </Box>
 
-                <div className="flex items-center justify-between py-3 hover:bg-gray-700/30 px-3 rounded-lg transition-colors">
-                  <div className="space-y-1">
-                    <label className="text-white font-medium block">Show Logo</label>
-                    <span className="text-gray-400 text-sm">Display NostrEx logo</span>
-                  </div>
-                  <div 
-                    className="h-6 w-11 rounded-full relative bg-gray-600 cursor-pointer transition-colors"
-                    onClick={() => onSettingsChange({ showLogo: !settings.showLogo })}
-                  >
-                    <input 
-                      type="checkbox" 
-                      checked={settings.showLogo}
-                      onChange={() => {}}
-                      className="sr-only peer" 
-                    />
-                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.showLogo ? 'bg-purple-600' : ''}`}></span>
-                    <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.showLogo ? 'translate-x-5' : ''}`}></span>
-                  </div>
-                </div>
+        {/* Scrollable Content */}
+        <ScrollContent sx={{ p: 3 }}>
+          <SettingSection title="Appearance">
+            <ListItem>
+              <ListItemIcon><Palette /></ListItemIcon>
+              <ListItemText 
+                primary="Theme" 
+                secondary={
+                  `Currently using ${
+                    localSettings.theme === 'system' 
+                      ? 'system theme' 
+                      : `${localSettings.theme} mode`
+                  }`
+                }
+              />
+              <ListItemSecondaryAction>
+                <TextField
+                  select
+                  size="small"
+                  value={localSettings.theme}
+                  onChange={(e) => handleThemeChange(e.target.value as Settings['theme'])}
+                  SelectProps={{ native: true }}
+                >
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                  <option value="system">System</option>
+                </TextField>
+              </ListItemSecondaryAction>
+            </ListItem>
+            <Divider component="li" />
+            <ListItem>
+              <ListItemIcon><Language /></ListItemIcon>
+              <ListItemText primary="Language" secondary="Select your language" />
+              <ListItemSecondaryAction>
+                <TextField
+                  select
+                  size="small"
+                  value={localSettings.language}
+                  onChange={(e) => handleChange('language', e.target.value)}
+                  SelectProps={{ native: true }}
+                >
+                  <option value="en">English</option>
+                 </TextField>
+              </ListItemSecondaryAction>
+            </ListItem>
+          </SettingSection>
 
-                <div className="flex items-center justify-between py-3 hover:bg-gray-700/30 px-3 rounded-lg transition-colors">
-                  <div className="space-y-1">
-                    <label className="text-white font-medium block">Notifications</label>
-                    <span className="text-gray-400 text-sm">Enable push notifications</span>
-                  </div>
-                  <div 
-                    className="h-6 w-11 rounded-full relative bg-gray-600 cursor-pointer transition-colors"
-                    onClick={() => onSettingsChange({ notifications: !settings.notifications })}
-                  >
-                    <input 
-                      type="checkbox" 
-                      checked={settings.notifications}
-                      onChange={() => {}}
-                      className="sr-only peer" 
-                    />
-                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.notifications ? 'bg-purple-600' : ''}`}></span>
-                    <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.notifications ? 'translate-x-5' : ''}`}></span>
-                  </div>
-                </div>
+          <SettingSection title="Personal">
+            <ListItem>
+              <ListItemIcon><AccountCircle /></ListItemIcon>
+              <ListItemText 
+                primary="Your Name" 
+                secondary="Enter your name for greetings"
+              />
+              <ListItemSecondaryAction sx={{ width: 200 }}>
+                <TextField
+                  size="small"
+                  value={localSettings.userName}
+                  onChange={(e) => handleChange('userName', e.target.value)}
+                  placeholder="Enter your name"
+                  fullWidth
+                />
+              </ListItemSecondaryAction>
+            </ListItem>
+          </SettingSection>
 
-                <div className="flex items-center justify-between py-3 hover:bg-gray-700/30 px-3 rounded-lg transition-colors">
-                  <div className="space-y-1">
-                    <label className="text-white font-medium block">Show Search Box</label>
-                    <span className="text-gray-400 text-sm">Display search box</span>
-                  </div>
-                  <div 
-                    className="h-6 w-11 rounded-full relative bg-gray-600 cursor-pointer transition-colors"
-                    onClick={() => onSettingsChange({ showSearchBox: !settings.showSearchBox })}
-                  >
-                    <input 
-                      type="checkbox" 
-                      checked={settings.showSearchBox}
-                      onChange={() => {}}
-                      className="sr-only peer" 
-                    />
-                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.showSearchBox ? 'bg-purple-600' : ''}`}></span>
-                    <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.showSearchBox ? 'translate-x-5' : ''}`}></span>
-                  </div>
-                </div>
+          <SettingSection title="Privacy & Security">
+            <ListItem>
+              <ListItemIcon><Security /></ListItemIcon>
+              <ListItemText 
+                primary="Privacy Mode" 
+                secondary="Enhanced privacy protection"
+              />
+              <ListItemSecondaryAction>
+                <Switch
+                  edge="end"
+                  checked={localSettings.privacyMode}
+                  onChange={(e) => handleChange('privacyMode', e.target.checked)}
+                />
+              </ListItemSecondaryAction>
+            </ListItem>
+            <Divider component="li" />
+            <ListItem>
+              <ListItemIcon><Delete color="error" /></ListItemIcon>
+              <ListItemText 
+                primary="Clear All Data" 
+                secondary="Remove all stored data and reset settings"
+                primaryTypographyProps={{ color: 'error' }}
+              />
+              <ListItemSecondaryAction>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  startIcon={<Delete />}
+                  onClick={() => {
+                    localStorage.clear();
+                    onSettingsChange(DEFAULT_SETTINGS);
+                  }}
+                >
+                  Clear
+                </Button>
+              </ListItemSecondaryAction>
+            </ListItem>
+          </SettingSection>
 
-                <div className="flex items-center justify-between py-3 hover:bg-gray-700/30 px-3 rounded-lg transition-colors">
-                  <div className="space-y-1">
-                    <label className="text-white font-medium block">Show Shortcuts</label>
-                    <span className="text-gray-400 text-sm">Display shortcuts modal</span>
-                  </div>
-                  <div 
-                    className="h-6 w-11 rounded-full relative bg-gray-600 cursor-pointer transition-colors"
-                    onClick={() => onSettingsChange({ showShortcuts: !settings.showShortcuts })}
-                  >
-                    <input 
-                      type="checkbox" 
-                      checked={settings.showShortcuts}
-                      onChange={() => {}}
-                      className="sr-only peer" 
-                    />
-                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.showShortcuts ? 'bg-purple-600' : ''}`}></span>
-                    <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.showShortcuts ? 'translate-x-5' : ''}`}></span>
-                  </div>
-                </div>
+          <SettingSection title="Sync & Performance">
+            <ListItem>
+              <ListItemIcon><CloudSync /></ListItemIcon>
+              <ListItemText 
+                primary="Auto Sync" 
+                secondary="Keep data synced across devices"
+              />
+              <ListItemSecondaryAction>
+                <Switch
+                  edge="end"
+                  checked={localSettings.autoSync}
+                  onChange={(e) => handleChange('autoSync', e.target.checked)}
+                />
+              </ListItemSecondaryAction>
+            </ListItem>
+            <Divider component="li" />
+            <ListItem>
+              <ListItemIcon><Speed /></ListItemIcon>
+              <ListItemText 
+                primary="Compact Mode" 
+                secondary="Optimize for better performance"
+              />
+              <ListItemSecondaryAction>
+                <Switch
+                  edge="end"
+                  checked={localSettings.compactMode}
+                  onChange={(e) => handleChange('compactMode', e.target.checked)}
+                />
+              </ListItemSecondaryAction>
+            </ListItem>
+            <Divider component="li" />
+            <ListItem>
+              <ListItemIcon><Storage /></ListItemIcon>
+              <ListItemText 
+                primary="Storage" 
+                secondary="Manage app data and cache"
+              />
+              <ListItemSecondaryAction>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<RestartAlt />}
+                  onClick={() => {/* Add cache clear logic */}}
+                >
+                  Clear Cache
+                </Button>
+              </ListItemSecondaryAction>
+            </ListItem>
+          </SettingSection>
 
-                <div className="flex items-center justify-between py-3 hover:bg-gray-700/30 px-3 rounded-lg transition-colors">
-                  <div className="space-y-1">
-                    <label className="text-white font-medium block">Dark Mode</label>
-                    <span className="text-gray-400 text-sm">Choose your preferred theme</span>
-                  </div>
-                  <div 
-                    className="h-6 w-11 rounded-full relative bg-gray-600 cursor-pointer transition-colors"
-                    onClick={() => onSettingsChange({ isDarkMode: !settings.isDarkMode })}
-                  >
-                    <input 
-                      type="checkbox" 
-                      checked={settings.isDarkMode}
-                      onChange={() => {}}
-                      className="sr-only peer" 
-                    />
-                    <span className={`absolute inset-0 rounded-full transition-colors ${settings.isDarkMode ? 'bg-purple-600' : ''}`}></span>
-                    <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${settings.isDarkMode ? 'translate-x-5' : ''}`}></span>
-                  </div>
-                </div>
+          <SettingSection title="UI Elements">
+            <ListItem>
+              <ListItemIcon><Timer /></ListItemIcon>
+              <ListItemText 
+                primary="Clock" 
+                secondary="Show time and date"
+              />
+              <ListItemSecondaryAction>
+                <Switch
+                  edge="end"
+                  checked={localSettings.showClock}
+                  onChange={(e) => handleChange('showClock', e.target.checked)}
+                />
+              </ListItemSecondaryAction>
+            </ListItem>
+            <Divider component="li" />
+            <ListItem>
+              <ListItemIcon><Image /></ListItemIcon>
+              <ListItemText 
+                primary="Logo" 
+                secondary="Show application logo"
+              />
+              <ListItemSecondaryAction>
+                <Switch
+                  edge="end"
+                  checked={localSettings.showLogo}
+                  onChange={(e) => handleChange('showLogo', e.target.checked)}
+                />
+              </ListItemSecondaryAction>
+            </ListItem>
+            <Divider component="li" />
+            <ListItem>
+              <ListItemIcon><SearchRounded /></ListItemIcon>
+              <ListItemText 
+                primary="Search Box" 
+                secondary="Show search functionality"
+              />
+              <ListItemSecondaryAction>
+                <Switch
+                  edge="end"
+                  checked={localSettings.showSearchBox}
+                  onChange={(e) => handleChange('showSearchBox', e.target.checked)}
+                />
+              </ListItemSecondaryAction>
+            </ListItem>
+            <Divider component="li" />
+            <ListItem>
+              <ListItemIcon><ViewModule /></ListItemIcon>
+              <ListItemText 
+                primary="Shortcuts" 
+                secondary="Show quick access shortcuts"
+              />
+              <ListItemSecondaryAction>
+                <Switch
+                  edge="end"
+                  checked={localSettings.showShortcuts}
+                  onChange={(e) => handleChange('showShortcuts', e.target.checked)}
+                />
+              </ListItemSecondaryAction>
+            </ListItem>
+            <Divider component="li" />
+            <ListItem>
+              <ListItemIcon><AccountCircle /></ListItemIcon>
+              <ListItemText 
+                primary="Profile" 
+                secondary="Show user profile"
+              />
+              <ListItemSecondaryAction>
+                <Switch
+                  edge="end"
+                  checked={localSettings.showProfile}
+                  onChange={(e) => handleChange('showProfile', e.target.checked)}
+                />
+              </ListItemSecondaryAction>
+            </ListItem>
+          </SettingSection>
 
-                <div className="space-y-4 py-3 hover:bg-gray-700/30 px-3 rounded-lg transition-colors">
-                  <div className="space-y-1">
-                    <label className="text-white font-medium block">Public Key</label>
-                    <input 
-                      type="text" 
-                      value={publicKey}
-                      onChange={(e) => handlePublicKeyChange(e.target.value)}
-                      className={`w-full px-4 py-3 rounded-lg outline-none transition-all duration-200
-                        ${settings.isDarkMode 
-                          ? 'bg-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 border-gray-600' 
-                          : 'bg-gray-50 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-purple-500 border-gray-300'
-                        } border focus:border-purple-500`}
-                      placeholder="Enter your public key"
-                    />
-                  </div>
-                </div>
+          <SettingSection title="Nostr Keys">
+            <ListItem>
+              <ListItemIcon><VpnKey /></ListItemIcon>
+              <ListItemText 
+                primary="Public Key" 
+                secondary="Your Nostr public key"
+              />
+              <ListItemSecondaryAction sx={{ width: 250 }}>
+                <TextField
+                  size="small"
+                  value={localSettings.nostrPublicKey}
+                  onChange={(e) => handleChange('nostrPublicKey', e.target.value)}
+                  placeholder="npub..."
+                  fullWidth
+                />
+              </ListItemSecondaryAction>
+            </ListItem>
+            <Divider component="li" />
+            <ListItem>
+              <ListItemIcon><VpnKey color="warning" /></ListItemIcon>
+              <ListItemText 
+                primary="Private Key" 
+                secondary="Keep this secret!"
+                primaryTypographyProps={{ color: 'warning.main' }}
+              />
+              <ListItemSecondaryAction sx={{ width: 250 }}>
+                <TextField
+                  type="password"
+                  size="small"
+                  value={localSettings.nostrPrivateKey}
+                  onChange={(e) => handleChange('nostrPrivateKey', e.target.value)}
+                  placeholder="nsec..."
+                  fullWidth
+                />
+              </ListItemSecondaryAction>
+            </ListItem>
+          </SettingSection>
+        </ScrollContent>
 
-                <div className="space-y-4 py-3 hover:bg-gray-700/30 px-3 rounded-lg transition-colors">
-                  <div className="space-y-1">
-                    <label className="text-white font-medium block">Private Key</label>
-                    <input 
-                      type="text" 
-                      value={privateKey}
-                      onChange={(e) => setPrivateKey(e.target.value)}
-                      className={`w-full px-4 py-3 rounded-lg outline-none transition-all duration-200
-                        ${settings.isDarkMode 
-                          ? 'bg-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 border-gray-600' 
-                          : 'bg-gray-50 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-purple-500 border-gray-300'
-                        } border focus:border-purple-500`}
-                      placeholder="Enter your private key"
-                    />
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-gray-700 flex justify-end space-x-3 sticky bottom-0 bg-gray-800 z-10">
-              <button 
-                onClick={() => setIsOpen(false)}
-                className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleSave}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-              >
-                Save Changes
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
-    </>
+        {/* Fixed Footer */}
+        <Box
+          sx={{
+            p: 2,
+            borderTop: 1,
+            borderColor: 'divider',
+            position: 'sticky',
+            bottom: 0,
+            bgcolor: 'background.paper',
+            zIndex: 1,
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 2,
+          }}
+        >
+          <Button
+            variant="outlined"
+            onClick={() => {
+              setLocalSettings(settings);
+              onClose();
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              onSettingsChange(localSettings);
+              onClose();
+            }}
+          >
+            Save Changes
+          </Button>
+        </Box>
+      </Box>
+    </Modal>
   );
 }
+
