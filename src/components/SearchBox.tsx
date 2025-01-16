@@ -26,12 +26,20 @@ import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 
 interface SpeechRecognitionEvent {
   results: {
-    [key: number]: {
-      [key: number]: {
-        transcript: string;
-      };
-    };
-  };
+    item(index: number): SpeechRecognitionResult;
+    length: number;
+    [index: number]: SpeechRecognitionResult;
+  }
+}
+
+interface SpeechRecognitionResult {
+  isFinal: boolean;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
 }
 
 interface SpeechRecognition extends EventTarget {
@@ -151,15 +159,23 @@ export default function SearchBox() {
   const handleVoiceSearch = () => {
     if ('webkitSpeechRecognition' in window) {
       const recognition = new window.webkitSpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
+      recognition.continuous = true;
+      recognition.interimResults = true;
 
-      recognition.onstart = () => setIsListening(true);
-      recognition.onend = () => setIsListening(false);
+      recognition.onstart = () => {
+        setIsListening(true);
+        setQuery(''); // پاک کردن متن قبلی
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
       recognition.onresult = (event: SpeechRecognitionEvent) => {
-        const transcript = event.results[0][0].transcript;
+        const transcript = Array.from(event.results)
+          .map(result => result[0].transcript)
+          .join(' ');
         setQuery(transcript);
-        handleSearch(transcript);
       };
 
       recognition.start();
@@ -207,7 +223,6 @@ export default function SearchBox() {
     setQuery(searchQuery);
     inputRef.current?.focus();
     setShowHistory(false);
-    setShowSuggestions(false);
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -298,8 +313,7 @@ export default function SearchBox() {
                   {recentSearches.map((search, index) => (
                     <ListItem 
                       key={index}
-                      component="div"
-                      dense
+                      component="button"
                       onClick={() => handleHistoryItemClick(search)}
                       sx={{
                         width: '100%',
@@ -338,9 +352,7 @@ export default function SearchBox() {
               {showSuggestions && suggestions.map((suggestion, index) => (
                 <ListItem 
                   key={index}
-                  component="div"
-                  role="button"
-                  tabIndex={0}
+                  component="button"
                   onClick={() => handleSuggestionClick(suggestion)}
                   sx={{
                     width: '100%',
