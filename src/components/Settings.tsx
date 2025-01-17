@@ -1,475 +1,352 @@
+import React from 'react';
 import {
-  Box,
-  Paper,
-  Typography,
-  Switch,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  Divider,
-  IconButton,
-  TextField,
-  Button,
-  Modal,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
+    Tabs,
+    Tab,
+    Box,
+    Switch,
+    TextField,
+    Typography,
+    Stack,
+    Paper,
+    Tooltip,
+    Avatar,
+    Chip,
+    LinearProgress,
+    CircularProgress,
+    Grid,
+    Alert,
 } from '@mui/material';
-
-// Icons
+import { Settings, DEFAULT_SETTINGS } from '../types/settings';
+import { useNostr } from '../hooks/useNostr';
 import {
-  Palette,
-  Language,
-  Security,
-  Storage,
-  Speed,
-  CloudSync,
-  Delete,
-  RestartAlt,
-  Close,
-  ViewModule,
-  Timer,
-  SearchRounded,
-  AccountCircle,
-  Image,
-  VpnKey,
+    Brightness4,
+    Brightness7,
+    Computer,
+    Security,
+    Notifications,
+    Dashboard,
+    KeyOutlined,
+    Settings as SettingsIcon,
+    Close as CloseIcon,
+    Save as SaveIcon,
 } from '@mui/icons-material';
 
-import type { Settings } from '../types/settings';
-import { DEFAULT_SETTINGS } from '../types/settings';
-import { useState, useEffect } from 'react';
-import { styled } from '@mui/material/styles';
-
-interface SettingSectionProps {
-  title: string;
-  children: React.ReactNode;
+interface SettingsDialogProps {
+    open: boolean;
+    onClose: () => void;
+    settings: Settings;
+    onSettingsChange: (updates: Partial<Settings>) => void;
 }
 
-function SettingSection({ title, children }: SettingSectionProps) {
-  return (
-    <Paper sx={{ mb: 3, p: 0 }}>
-      <Typography variant="h6" sx={{ p: 2, pb: 1 }}>
-        {title}
-      </Typography>
-      <List disablePadding>
-        {children}
-      </List>
-    </Paper>
-  );
-}
+const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose, settings, onSettingsChange }) => {
+    const [activeTab, setActiveTab] = React.useState(0);
+    const { fetchProfile, isLoading, error, profile } = useNostr();
+    const previousPublicKey = React.useRef(settings?.nostr?.publicKey);
 
-interface SettingsModalProps {
-  open: boolean;
-  onClose: () => void;
-  settings: Settings;
-  onSettingsChange: (updates: Partial<Settings>) => void;
-}
+    // Ensure settings is properly initialized with defaults
+    const safeSettings: Settings = {
+        ...DEFAULT_SETTINGS,
+        ...settings,
+        ui: { ...DEFAULT_SETTINGS.ui, ...settings?.ui },
+        nostr: { ...DEFAULT_SETTINGS.nostr, ...settings?.nostr },
+        security: { ...DEFAULT_SETTINGS.security, ...settings?.security },
+        app: { ...DEFAULT_SETTINGS.app, ...settings?.app }
+    };
 
-const ScrollContent = styled(Box)(({ theme }) => ({
-  overflowY: 'auto',
-  overflowX: 'hidden',
-  flex: 1,
-  '&::-webkit-scrollbar': {
-    width: '12px',
-    backgroundColor: theme.palette.mode === 'dark' 
-      ? 'rgba(255, 255, 255, 0.05)'
-      : 'rgba(0, 0, 0, 0.05)',
-    borderRadius: '6px',
-  },
-  '&::-webkit-scrollbar-thumb': {
-    backgroundColor: theme.palette.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.2)'
-      : 'rgba(0, 0, 0, 0.2)',
-    borderRadius: '6px',
-    border: '2px solid transparent',
-    backgroundClip: 'padding-box',
-    '&:hover': {
-      backgroundColor: theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.3)'
-        : 'rgba(0, 0, 0, 0.3)',
-    },
-  },
-  '&::-webkit-scrollbar-track': {
-    backgroundColor: 'transparent',
-  },
-}));
+    const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+        setActiveTab(newValue);
+    };
 
-export default function Settings({ open, onClose, settings, onSettingsChange }: SettingsModalProps) {
-  const [localSettings, setLocalSettings] = useState(settings);
+    const handleSettingChange = <T extends keyof Settings>(section: T, updates: Partial<Settings[T]>) => {
+        onSettingsChange({
+            [section]: {
+                ...safeSettings[section],
+                ...updates
+            }
+        });
+    };
 
-  useEffect(() => {
-    setLocalSettings(settings);
-  }, [settings]);
+    const handleNostrSettingsChange = async (updates: Partial<Settings['nostr']>) => {
+        handleSettingChange('nostr', updates);
+        
+        // Only fetch if publicKey actually changed
+        if (updates.publicKey && updates.publicKey !== previousPublicKey.current) {
+            previousPublicKey.current = updates.publicKey;
+            await fetchProfile(true); // Force refresh
+        }
+    };
 
-  const handleChange = (key: keyof Settings, value: Settings[keyof Settings]) => {
-    setLocalSettings(prev => ({
-      ...prev,
-      [key]: value
-    }));
-  };
+    const handleSave = async () => {
+        try {
+            // اگر کلید عمومی تغییر کرده باشد، پروفایل را به‌روز می‌کنیم
+            if (safeSettings.nostr.publicKey !== previousPublicKey.current) {
+                await fetchProfile(true); // force update
+            }
+            onClose();
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            onClose();
+        }
+    };
 
-  // Update theme handling
-  const handleThemeChange = (value: Settings['theme']) => {
-    handleChange('theme', value);
-  };
-
-  return (
-    <Modal
-      open={open}
-      onClose={() => onClose()}
-      disableAutoFocus
-      disableEnforceFocus
-      disableRestoreFocus
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Box
-        sx={{
-          position: 'relative',
-          width: '100%',
-          maxWidth: 800,
-          maxHeight: '90vh',
-          bgcolor: 'background.paper',
-          borderRadius: 2,
-          boxShadow: 24,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {/* Fixed Header */}
-        <Box
-          sx={{
-            p: 3,
-            borderBottom: 1,
-            borderColor: 'divider',
-            position: 'sticky',
-            top: 0,
-            bgcolor: 'background.paper',
-            zIndex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <Typography variant="h4" sx={{ fontWeight: 500 }}>
-            Settings
-          </Typography>
-          <IconButton onClick={() => onClose()}>
-            <Close />
-          </IconButton>
-        </Box>
-
-        {/* Scrollable Content */}
-        <ScrollContent sx={{ p: 3 }}>
-          <SettingSection title="Appearance">
-            <ListItem>
-              <ListItemIcon><Palette /></ListItemIcon>
-              <ListItemText 
-                primary="Theme" 
-                secondary={
-                  `Currently using ${
-                    localSettings.theme === 'system' 
-                      ? 'system theme' 
-                      : `${localSettings.theme} mode`
-                  }`
+    return (
+        <Dialog 
+            open={open} 
+            onClose={onClose}
+            maxWidth="md"
+            fullWidth
+            PaperProps={{
+                sx: {
+                    minHeight: '85vh',
+                    maxHeight: '90vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderRadius: 2,
+                    overflow: 'hidden'
                 }
-              />
-              <ListItemSecondaryAction>
-                <TextField
-                  select
-                  size="small"
-                  value={localSettings.theme}
-                  onChange={(e) => handleThemeChange(e.target.value as Settings['theme'])}
-                  SelectProps={{ native: true }}
-                >
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                  <option value="system">System</option>
-                </TextField>
-              </ListItemSecondaryAction>
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemIcon><Language /></ListItemIcon>
-              <ListItemText primary="Language" secondary="Select your language" />
-              <ListItemSecondaryAction>
-                <TextField
-                  select
-                  size="small"
-                  value={localSettings.language}
-                  onChange={(e) => handleChange('language', e.target.value)}
-                  SelectProps={{ native: true }}
-                >
-                  <option value="en">English</option>
-                 </TextField>
-              </ListItemSecondaryAction>
-            </ListItem>
-          </SettingSection>
-
-          <SettingSection title="Personal">
-            <ListItem>
-              <ListItemIcon><AccountCircle /></ListItemIcon>
-              <ListItemText 
-                primary="Your Name" 
-                secondary="Enter your name for greetings"
-              />
-              <ListItemSecondaryAction sx={{ width: 200 }}>
-                <TextField
-                  size="small"
-                  value={localSettings.userName}
-                  onChange={(e) => handleChange('userName', e.target.value)}
-                  placeholder="Enter your name"
-                  fullWidth
-                />
-              </ListItemSecondaryAction>
-            </ListItem>
-          </SettingSection>
-
-          <SettingSection title="Privacy & Security">
-            <ListItem>
-              <ListItemIcon><Security /></ListItemIcon>
-              <ListItemText 
-                primary="Privacy Mode" 
-                secondary="Enhanced privacy protection"
-              />
-              <ListItemSecondaryAction>
-                <Switch
-                  edge="end"
-                  checked={localSettings.privacyMode}
-                  onChange={(e) => handleChange('privacyMode', e.target.checked)}
-                />
-              </ListItemSecondaryAction>
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemIcon><Delete color="error" /></ListItemIcon>
-              <ListItemText 
-                primary="Clear All Data" 
-                secondary="Remove all stored data and reset settings"
-                primaryTypographyProps={{ color: 'error' }}
-              />
-              <ListItemSecondaryAction>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  size="small"
-                  startIcon={<Delete />}
-                  onClick={() => {
-                    localStorage.clear();
-                    onSettingsChange(DEFAULT_SETTINGS);
-                  }}
-                >
-                  Clear
-                </Button>
-              </ListItemSecondaryAction>
-            </ListItem>
-          </SettingSection>
-
-          <SettingSection title="Sync & Performance">
-            <ListItem>
-              <ListItemIcon><CloudSync /></ListItemIcon>
-              <ListItemText 
-                primary="Auto Sync" 
-                secondary="Keep data synced across devices"
-              />
-              <ListItemSecondaryAction>
-                <Switch
-                  edge="end"
-                  checked={localSettings.autoSync}
-                  onChange={(e) => handleChange('autoSync', e.target.checked)}
-                />
-              </ListItemSecondaryAction>
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemIcon><Speed /></ListItemIcon>
-              <ListItemText 
-                primary="Compact Mode" 
-                secondary="Optimize for better performance"
-              />
-              <ListItemSecondaryAction>
-                <Switch
-                  edge="end"
-                  checked={localSettings.compactMode}
-                  onChange={(e) => handleChange('compactMode', e.target.checked)}
-                />
-              </ListItemSecondaryAction>
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemIcon><Storage /></ListItemIcon>
-              <ListItemText 
-                primary="Storage" 
-                secondary="Manage app data and cache"
-              />
-              <ListItemSecondaryAction>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<RestartAlt />}
-                  onClick={() => {/* Add cache clear logic */}}
-                >
-                  Clear Cache
-                </Button>
-              </ListItemSecondaryAction>
-            </ListItem>
-          </SettingSection>
-
-          <SettingSection title="UI Elements">
-            <ListItem>
-              <ListItemIcon><Timer /></ListItemIcon>
-              <ListItemText 
-                primary="Clock" 
-                secondary="Show time and date"
-              />
-              <ListItemSecondaryAction>
-                <Switch
-                  edge="end"
-                  checked={localSettings.showClock}
-                  onChange={(e) => handleChange('showClock', e.target.checked)}
-                />
-              </ListItemSecondaryAction>
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemIcon><Image /></ListItemIcon>
-              <ListItemText 
-                primary="Logo" 
-                secondary="Show application logo"
-              />
-              <ListItemSecondaryAction>
-                <Switch
-                  edge="end"
-                  checked={localSettings.showLogo}
-                  onChange={(e) => handleChange('showLogo', e.target.checked)}
-                />
-              </ListItemSecondaryAction>
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemIcon><SearchRounded /></ListItemIcon>
-              <ListItemText 
-                primary="Search Box" 
-                secondary="Show search functionality"
-              />
-              <ListItemSecondaryAction>
-                <Switch
-                  edge="end"
-                  checked={localSettings.showSearchBox}
-                  onChange={(e) => handleChange('showSearchBox', e.target.checked)}
-                />
-              </ListItemSecondaryAction>
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemIcon><ViewModule /></ListItemIcon>
-              <ListItemText 
-                primary="Shortcuts" 
-                secondary="Show quick access shortcuts"
-              />
-              <ListItemSecondaryAction>
-                <Switch
-                  edge="end"
-                  checked={localSettings.showShortcuts}
-                  onChange={(e) => handleChange('showShortcuts', e.target.checked)}
-                />
-              </ListItemSecondaryAction>
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemIcon><AccountCircle /></ListItemIcon>
-              <ListItemText 
-                primary="Profile" 
-                secondary="Show user profile"
-              />
-              <ListItemSecondaryAction>
-                <Switch
-                  edge="end"
-                  checked={localSettings.showProfile}
-                  onChange={(e) => handleChange('showProfile', e.target.checked)}
-                />
-              </ListItemSecondaryAction>
-            </ListItem>
-          </SettingSection>
-
-          <SettingSection title="Nostr Keys">
-            <ListItem>
-              <ListItemIcon><VpnKey /></ListItemIcon>
-              <ListItemText 
-                primary="Public Key" 
-                secondary="Your Nostr public key"
-              />
-              <ListItemSecondaryAction sx={{ width: 250 }}>
-                <TextField
-                  size="small"
-                  value={localSettings.nostrPublicKey}
-                  onChange={(e) => handleChange('nostrPublicKey', e.target.value)}
-                  placeholder="npub..."
-                  fullWidth
-                />
-              </ListItemSecondaryAction>
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemIcon><VpnKey color="warning" /></ListItemIcon>
-              <ListItemText 
-                primary="Private Key" 
-                secondary="Keep this secret!"
-                primaryTypographyProps={{ color: 'warning.main' }}
-              />
-              <ListItemSecondaryAction sx={{ width: 250 }}>
-                <TextField
-                  type="password"
-                  size="small"
-                  value={localSettings.nostrPrivateKey}
-                  onChange={(e) => handleChange('nostrPrivateKey', e.target.value)}
-                  placeholder="nsec..."
-                  fullWidth
-                />
-              </ListItemSecondaryAction>
-            </ListItem>
-          </SettingSection>
-        </ScrollContent>
-
-        {/* Fixed Footer */}
-        <Box
-          sx={{
-            p: 2,
-            borderTop: 1,
-            borderColor: 'divider',
-            position: 'sticky',
-            bottom: 0,
-            bgcolor: 'background.paper',
-            zIndex: 1,
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: 2,
-          }}
+            }}
         >
-          <Button
-            variant="outlined"
-            onClick={() => {
-              setLocalSettings(settings);
-              onClose();
+            <Box sx={{ 
+                borderBottom: 1, 
+                borderColor: 'divider',
+                bgcolor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+                pb: 0
+            }}>
+                <DialogTitle sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    gap: 2,
+                    pb: 2
+                }}>
+                    <SettingsIcon sx={{ color: 'primary.main' }} />
+                    <Typography variant="h5" component="span" sx={{ fontWeight: 500 }}>
+                        Settings
+                    </Typography>
+                </DialogTitle>
+                
+                <Tabs 
+                    value={activeTab} 
+                    onChange={handleTabChange}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    sx={{ 
+                        px: 2,
+                        '& .MuiTab-root': {
+                            minHeight: 48,
+                            textTransform: 'none',
+                            fontSize: '0.95rem',
+                            fontWeight: 500,
+                        }
+                    }}
+                >
+                    <Tab icon={<Dashboard sx={{ mb: 0.5 }} />} label="UI & Display" />
+                    <Tab icon={<KeyOutlined sx={{ mb: 0.5 }} />} label="Nostr" />
+                    <Tab icon={<Security sx={{ mb: 0.5 }} />} label="Security" />
+                    <Tab icon={<Notifications sx={{ mb: 0.5 }} />} label="App" />
+                </Tabs>
+            </Box>
+
+            {isLoading && <LinearProgress />}
+
+            <DialogContent sx={{ 
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'auto',
+                px: 3,
+                py: 2
+            }}>
+                <TabPanel value={activeTab} index={0}>
+                    <Stack spacing={3}>
+                        <Paper variant="outlined" sx={{ p: 2 }}>
+                            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Brightness4 color="primary" /> Theme & Layout
+                            </Typography>
+                            <Stack spacing={2}>
+                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                    {['light', 'dark', 'system'].map((theme) => (
+                                        <Tooltip key={theme} title={`${theme.charAt(0).toUpperCase() + theme.slice(1)} Theme`}>
+                                            <Paper
+                                                elevation={safeSettings.ui.theme === theme ? 4 : 1}
+                                                onClick={() => handleSettingChange('ui', { theme: theme as 'light' | 'dark' | 'system' })}
+                                                sx={{
+                                                    p: 2,
+                                                    flex: 1,
+                                                    cursor: 'pointer',
+                                                    bgcolor: safeSettings.ui.theme === theme ? 'primary.main' : 'background.paper',
+                                                    color: safeSettings.ui.theme === theme ? 'primary.contrastText' : 'text.primary',
+                                                    transition: 'all 0.2s',
+                                                    textAlign: 'center',
+                                                    '&:hover': {
+                                                        bgcolor: safeSettings.ui.theme === theme ? 'primary.dark' : 'action.hover'
+                                                    }
+                                                }}
+                                            >
+                                                {theme === 'light' && <Brightness7 />}
+                                                {theme === 'dark' && <Brightness4 />}
+                                                {theme === 'system' && <Computer />}
+                                                <Typography sx={{ mt: 1 }}>
+                                                    {theme.charAt(0).toUpperCase() + theme.slice(1)}
+                                                </Typography>
+                                            </Paper>
+                                        </Tooltip>
+                                    ))}
+                                </Box>
+                            </Stack>
+                        </Paper>
+
+                        <Paper variant="outlined" sx={{ p: 2 }}>
+                            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Dashboard color="primary" /> Display Elements
+                            </Typography>
+                            <Grid container spacing={2}>
+                                {[
+                                    { key: 'showClock', label: 'Clock', icon: '🕒' },
+                                    { key: 'showLogo', label: 'Logo', icon: '🎨' },
+                                    { key: 'showSearchBox', label: 'Search', icon: '🔍' },
+                                    { key: 'showShortcuts', label: 'Shortcuts', icon: '⚡' },
+                                    { key: 'showProfile', label: 'Profile', icon: '👤' },
+                                    { key: 'compactMode', label: 'Compact Mode', icon: '📏' },
+                                ].map(({ key, label, icon }) => (
+                                    <Grid item xs={12} sm={6} md={4} key={key}>
+                                        <Paper
+                                            variant="outlined"
+                                            sx={{
+                                                p: 2,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                gap: 2
+                                            }}
+                                        >
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Typography variant="body1" component="span" sx={{ fontSize: '1.2rem' }}>
+                                                    {icon}
+                                                </Typography>
+                                                <Typography>{label}</Typography>
+                                            </Box>
+                                            <Switch
+                                                checked={safeSettings.ui[key as keyof typeof safeSettings.ui] as boolean}
+                                                onChange={(e) => handleSettingChange('ui', { [key]: e.target.checked })}
+                                            />
+                                        </Paper>
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        </Paper>
+                    </Stack>
+                </TabPanel>
+
+                <TabPanel value={activeTab} index={1}>
+                    <Stack spacing={3}>
+                        <Paper variant="outlined" sx={{ p: 2 }}>
+                            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <KeyOutlined color="primary" /> Nostr Identity
+                            </Typography>
+                            {error && (
+                                <Alert severity="error" sx={{ mb: 2 }}>
+                                    {error}
+                                </Alert>
+                            )}
+                            {profile && (
+                                <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <Avatar
+                                        src={profile.image}
+                                        sx={{ width: 56, height: 56 }}
+                                    >
+                                        {profile.name?.charAt(0) || '?'}
+                                    </Avatar>
+                                    <Box>
+                                        <Typography variant="h6">
+                                            {profile.name || profile.displayName || 'Unknown'}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {profile.about}
+                                        </Typography>
+                                        <Chip 
+                                            size="small" 
+                                            label={`${safeSettings.nostr.publicKey.slice(0, 8)}...${safeSettings.nostr.publicKey.slice(-8)}`}
+                                            color="primary" 
+                                            variant="outlined"
+                                            sx={{ mt: 1 }}
+                                        />
+                                    </Box>
+                                </Box>
+                            )}
+                            <TextField
+                                fullWidth
+                                label="Public Key"
+                                value={safeSettings.nostr.publicKey}
+                                onChange={(e) => handleNostrSettingsChange({ publicKey: e.target.value })}
+                                margin="normal"
+                                disabled={isLoading}
+                                helperText={isLoading ? "Fetching profile..." : "Enter your Nostr public key"}
+                                InputProps={{
+                                    readOnly: isLoading,
+                                    endAdornment: isLoading && (
+                                        <CircularProgress size={20} sx={{ mr: 1 }} />
+                                    )
+                                }}
+                            />
+                            {/* Continue with other Nostr settings... */}
+                        </Paper>
+                    </Stack>
+                </TabPanel>
+
+                {/* ... rest of the tabs ... */}
+            </DialogContent>
+
+            <DialogActions sx={{ 
+                borderTop: 1,
+                borderColor: 'divider',
+                bgcolor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+                px: 3,
+                py: 2,
+                gap: 1
+            }}>
+                <Button 
+                    onClick={onClose}
+                    variant="outlined"
+                    startIcon={<CloseIcon />}
+                >
+                    Cancel
+                </Button>
+                <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={handleSave}
+                    disabled={isLoading}
+                    startIcon={isLoading ? <CircularProgress size={20} /> : <SaveIcon />}
+                >
+                    {isLoading ? "Updating..." : "Save Changes"}
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
+};
+
+const TabPanel: React.FC<{ children?: React.ReactNode; value: number; index: number }> = ({ children, value, index }) => {
+    return (
+        <Box
+            role="tabpanel"
+            hidden={value !== index}
+            sx={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+                pt: 3
             }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              onSettingsChange(localSettings);
-              onClose();
-            }}
-          >
-            Save Changes
-          </Button>
+        >
+            {value === index && children}
         </Box>
-      </Box>
-    </Modal>
-  );
-}
+    );
+};
+
+export default SettingsDialog;
 

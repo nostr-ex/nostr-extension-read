@@ -14,6 +14,8 @@ import React from 'react';
 import SettingsIcon from '@mui/icons-material/Settings';
 import IconButton from '@mui/material/IconButton';
 import { Settings, DEFAULT_SETTINGS } from './types/settings';
+import { usePublicKey } from './hooks/useLocalStorage';
+import ErrorBoundary from './components/ErrorBoundary';
 
 interface AppProps {
   isDarkMode: boolean;
@@ -22,63 +24,74 @@ interface AppProps {
 
 const App: React.FC<AppProps> = ({ isDarkMode, setIsDarkMode }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [settings, setSettings] = useLocalStorage<Settings>("nostrex-settings", {
-    ...DEFAULT_SETTINGS,
-    isDarkMode: isDarkMode, // sync with prop
-  });
+  
+  // Initialize settings with proper structure
+  const [settings, setSettings] = useLocalStorage<Settings>("nostrex-settings", DEFAULT_SETTINGS);
 
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const { profile } = useNostr();
-  const [editingShortcut, setEditingShortcut] = useState<{ data: { name: string; url: string; icon: string }, index: number } | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-
-  const updateSettings = (updates: Partial<Settings>) => {
-    if ('theme' in updates) {
-      switch (updates.theme) {
-        case 'dark':
-          setIsDarkMode(true);
-          break;
-        case 'light':
-          setIsDarkMode(false);
-          break;
-        case 'system': {
-          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          setIsDarkMode(prefersDark);
-          break;
-        }
-      }
-    }
+  // Sync settings on mount
+  useEffect(() => {
+    if (!settings?.ui) return; // Add null check
 
     setSettings(prev => ({
       ...prev,
-      ...updates,
-      isDarkMode: updates.theme === 'dark' || 
-        (updates.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      ui: {
+        ...prev.ui,
+        isDarkMode,
+        theme: isDarkMode ? 'dark' : 'light'
+      }
     }));
+  }, []); // Run only on mount
+
+  const updateSettings = (updates: Partial<Settings>) => {
+    try {
+      if (!settings) return; // Add null check
+
+      // Handle theme changes
+      if (updates.ui?.theme) {
+        const newIsDarkMode = updates.ui.theme === 'dark' || 
+          (updates.ui.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        setIsDarkMode(newIsDarkMode);
+      }
+
+      // Handle nostr public key updates
+      if (updates.nostr?.publicKey) {
+        setPublicKey(updates.nostr.publicKey);
+      }
+
+      // Update settings with null checks
+      setSettings(prev => ({
+        ...prev,
+        ...(updates.ui ? { ui: { ...prev.ui, ...updates.ui } } : {}),
+        ...(updates.nostr ? { nostr: { ...prev.nostr, ...updates.nostr } } : {}),
+        ...(updates.security ? { security: { ...prev.security, ...updates.security } } : {}),
+        ...(updates.app ? { app: { ...prev.app, ...updates.app } } : {})
+      }));
+    } catch (error) {
+      console.error('Error updating settings:', error);
+    }
   };
 
-  // Add system theme change listener
+  // Update theme effect
   useEffect(() => {
-    if (settings.theme === 'system') {
+    if (!settings?.ui?.theme) return; // Add null check
+
+    if (settings.ui.theme === 'system') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleThemeChange = (e: MediaQueryListEvent) => {
         setIsDarkMode(e.matches);
-        setSettings(prev => ({ ...prev, isDarkMode: e.matches }));
+        updateSettings({ ui: { ...settings.ui, isDarkMode: e.matches } });
       };
 
       mediaQuery.addEventListener('change', handleThemeChange);
       return () => mediaQuery.removeEventListener('change', handleThemeChange);
     }
-  }, [settings.theme]);
+  }, [settings?.ui?.theme]); // Update dependency
 
-  // Initialize theme on mount
-  useEffect(() => {
-    if (settings.theme === 'system') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setIsDarkMode(prefersDark);
-      setSettings(prev => ({ ...prev, isDarkMode: prefersDark }));
-    }
-  }, []);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const { profile } = useNostr();
+  const [editingShortcut, setEditingShortcut] = useState<{ data: { name: string; url: string; icon: string }, index: number } | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [, setPublicKey] = usePublicKey();
 
   // Add this check for keyboard shortcuts
   useEffect(() => {
@@ -99,18 +112,50 @@ const App: React.FC<AppProps> = ({ isDarkMode, setIsDarkMode }) => {
   }, [settingsOpen]);
 
   const handleAddShortcut = (shortcut: { name: string; url: string; icon: string }) => {
+    if (!settings?.app?.shortcuts) {
+      // Initialize shortcuts array if it doesn't exist
+      updateSettings({ 
+        app: {
+          ...settings?.app,
+          shortcuts: [shortcut]
+        }
+      });
+      return;
+    }
+
     if (editingShortcut) {
       // Update existing shortcut
-      const updatedShortcuts = [...settings.shortcuts];
+      const updatedShortcuts = [...settings.app.shortcuts];
       updatedShortcuts[editingShortcut.index] = shortcut;
-      updateSettings({ shortcuts: updatedShortcuts });
+      updateSettings({ 
+        app: {
+          ...settings.app,
+          shortcuts: updatedShortcuts
+        }
+      });
       setEditingShortcut(null);
     } else {
       // Add new shortcut
-      const updatedShortcuts = settings.shortcuts ? [...settings.shortcuts, shortcut] : [shortcut];
-      updateSettings({ shortcuts: updatedShortcuts });
+      updateSettings({ 
+        app: {
+          ...settings.app,
+          shortcuts: [...settings.app.shortcuts, shortcut]
+        }
+      });
     }
     setIsAddModalOpen(false);
+  };
+
+  const handleDelete = (index: number) => {
+    if (!settings?.app?.shortcuts) return;
+    
+    const updatedShortcuts = settings.app.shortcuts.filter((_, i) => i !== index);
+    updateSettings({ 
+      app: {
+        ...settings.app,
+        shortcuts: updatedShortcuts
+      }
+    });
   };
 
   const handleEdit = (shortcut: { name: string; url: string; icon: string }, index: number) => {
@@ -118,122 +163,118 @@ const App: React.FC<AppProps> = ({ isDarkMode, setIsDarkMode }) => {
     setIsAddModalOpen(true);
   };
 
-  const handleDelete = (index: number) => {
-    const updatedShortcuts = settings.shortcuts.filter((_, i) => i !== index);
-    updateSettings({ shortcuts: updatedShortcuts });
-  };
-
   return (
-    <Box sx={{ minHeight: '100vh', width: '100vw' }}>
-      <Container 
-        maxWidth="xl" 
-        sx={{ 
-          py: { xs: 2, sm: 4 },
-          px: { xs: 2, sm: 3, md: 4 },
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        {/* Update settings button position */}
-        <IconButton
-          onClick={() => setSettingsOpen(true)}
-          sx={{
-            position: 'fixed',
-            bottom: 24,
-            right: 24,
-            bgcolor: theme => theme.palette.mode === 'dark' 
-              ? 'rgba(255, 255, 255, 0.08)' 
-              : 'rgba(0, 0, 0, 0.06)',
-            backdropFilter: 'blur(8px)',
-            '&:hover': {
-              bgcolor: theme => theme.palette.mode === 'dark'
-                ? 'rgba(255, 255, 255, 0.15)'
-                : 'rgba(0, 0, 0, 0.12)',
-            },
-            width: 48,
-            height: 48,
-            boxShadow: theme => theme.palette.mode === 'dark'
-              ? '0 4px 12px rgba(0,0,0,0.4)'
-              : '0 4px 12px rgba(0,0,0,0.1)',
-            transition: 'all 0.2s ease-in-out',
-            '&:active': {
-              transform: 'scale(0.95)'
-            }
+    <ErrorBoundary>
+      <Box sx={{ minHeight: '100vh', width: '100vw' }}>
+        <Container 
+          maxWidth="xl" 
+          sx={{ 
+            py: { xs: 2, sm: 4 },
+            px: { xs: 2, sm: 3, md: 4 },
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
         >
-          <SettingsIcon fontSize="medium" />
-        </IconButton>
+          {/* Update settings button position */}
+          <IconButton
+            onClick={() => setSettingsOpen(true)}
+            sx={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              bgcolor: theme => theme.palette.mode === 'dark' 
+                ? 'rgba(255, 255, 255, 0.08)' 
+                : 'rgba(0, 0, 0, 0.06)',
+              backdropFilter: 'blur(8px)',
+              '&:hover': {
+                bgcolor: theme => theme.palette.mode === 'dark'
+                  ? 'rgba(255, 255, 255, 0.15)'
+                  : 'rgba(0, 0, 0, 0.12)',
+              },
+              width: 48,
+              height: 48,
+              boxShadow: theme => theme.palette.mode === 'dark'
+                ? '0 4px 12px rgba(0,0,0,0.4)'
+                : '0 4px 12px rgba(0,0,0,0.1)',
+              transition: 'all 0.2s ease-in-out',
+              '&:active': {
+                transform: 'scale(0.95)'
+              }
+            }}
+          >
+            <SettingsIcon fontSize="medium" />
+          </IconButton>
 
-        {settings.showLogo && (
+          {settings?.ui?.showLogo && (
+            <Box sx={{ 
+              textAlign: 'center', 
+              mb: { xs: 2, sm: 4 }
+            }}>
+              <img 
+                src={nostrexLogo} 
+                style={{ 
+                  width: '80px', 
+                  height: '80px',
+                  maxWidth: '100%' 
+                }} 
+                alt="NostrEx logo" 
+              />
+            </Box>
+          )}
+          
+          {settings?.ui?.showClock && <Clock show={Boolean(settings?.ui?.showClock)} settings={settings} />}
+          
+          {settings?.ui?.showClock && <Box sx={{ height: '32px' }}></Box>}
+          
           <Box sx={{ 
-            textAlign: 'center', 
-            mb: { xs: 2, sm: 4 }
+            width: '100%',
+            maxWidth: '640px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 4
           }}>
-            <img 
-              src={nostrexLogo} 
-              style={{ 
-                width: '80px', 
-                height: '80px',
-                maxWidth: '100%' 
-              }} 
-              alt="NostrEx logo" 
-            />
+            {settings?.ui?.showSearchBox && <SearchBox />}
+            {settings?.ui?.showShortcuts && settings?.app?.shortcuts && (
+              <Shortcuts 
+                isDarkMode={settings?.ui?.isDarkMode || false} 
+                shortcuts={settings.app.shortcuts} 
+                setIsAddModalOpen={setIsAddModalOpen} 
+                onEdit={handleEdit} 
+                onDelete={handleDelete} 
+              />
+            )}
           </Box>
-        )}
-        
-        {settings.showClock && <Clock show={settings.showClock} settings={settings} />}
-        
-        {settings.showClock && <Box sx={{ height: '32px' }}></Box>}
-        
-        <Box sx={{ 
-          width: '100%',
-          maxWidth: '640px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 4
-        }}>
-          {settings.showSearchBox && <SearchBox />}
-          {settings.showShortcuts && (
-            <Shortcuts 
-              isDarkMode={settings.isDarkMode} 
-              shortcuts={settings.shortcuts} 
-              setIsAddModalOpen={setIsAddModalOpen} 
-              onEdit={handleEdit} 
-              onDelete={handleDelete} 
+
+          <SettingsDialog 
+            open={settingsOpen}
+            onClose={() => setSettingsOpen(false)}
+            settings={settings}
+            onSettingsChange={updateSettings}
+          />
+
+          {settings?.ui?.showProfile && profile && profile?.image && (
+            <Profile 
+              image={profile.image} 
             />
           )}
-        </Box>
 
-        <SettingsDialog 
-          open={settingsOpen}
-          onClose={() => setSettingsOpen(false)}
-          settings={settings}
-          onSettingsChange={updateSettings}
-        />
-
-        {settings.showProfile && profile && profile.profile?.image && (
-          <Profile 
-            image={profile.profile.image} 
-            name={profile.profile?.name || profile.profile?.displayName}
-          />
-        )}
-
-        {isAddModalOpen && (
-          <ShortcutsModal 
-            onClose={() => {
-              setIsAddModalOpen(false);
-              setEditingShortcut(null);
-            }}
-            onAddShortcut={handleAddShortcut}
-            editingShortcut={editingShortcut?.data}
-          />
-        )}
-      </Container>
-    </Box>
+          {isAddModalOpen && (
+            <ShortcutsModal 
+              onClose={() => {
+                setIsAddModalOpen(false);
+                setEditingShortcut(null);
+              }}
+              onAddShortcut={handleAddShortcut}
+              editingShortcut={editingShortcut?.data}
+            />
+          )}
+        </Container>
+      </Box>
+    </ErrorBoundary>
   );
 }
 

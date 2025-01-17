@@ -85,7 +85,7 @@ export default function SearchBox() {
 
       recognition.onstart = () => {
         setIsListening(true);
-        setQuery(''); // پاک کردن متن قبلی
+        setQuery(''); 
       };
 
       recognition.onend = () => {

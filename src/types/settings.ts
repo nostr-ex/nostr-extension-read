@@ -1,50 +1,82 @@
-export interface Settings {
-    // User Settings
-    userName: string;  // Add this field
-
-    // UI Settings
+// Interface for groups of settings
+interface UISettings {
+    theme: 'light' | 'dark' | 'system';
+    isDarkMode: boolean;
+    compactMode: boolean;
     showClock: boolean;
     showLogo: boolean;
     showSearchBox: boolean;
     showShortcuts: boolean;
     showProfile: boolean;
-    
-    // Theme Settings
-    theme: 'light' | 'dark' | 'system';
-    isDarkMode: boolean;
-    
-    // App Settings
     language: string;
-    privacyMode: boolean;
-    autoSync: boolean;
-    compactMode: boolean;
-    notifications: boolean;
+}
+
+interface NostrSettings {
+    publicKey: string;
+    privateKey: string;
+    defaultRelays: string[];
     profileName: string;
-    
-    // Nostr Keys
-    nostrPublicKey: string;
-    nostrPrivateKey: string;
-    
-    // Data
-    shortcuts: { name: string; url: string; icon: string }[];
-  }
-  
-  export const DEFAULT_SETTINGS: Settings = {
-    userName: '',  // Add this field
-    showClock: true,
-    showLogo: true,
-    showSearchBox: true,
-    showShortcuts: true,
-    showProfile: true,
-    theme: 'system',
-    isDarkMode: false,
-    language: 'en',
-    privacyMode: false,
-    autoSync: true,
-    compactMode: false,
-    notifications: true,
-    profileName: '',
-    nostrPublicKey: '',
-    nostrPrivateKey: '',
-    shortcuts: []
-  };
+}
+
+interface SecuritySettings {
+    privacyMode: boolean;
+    encryptData: boolean;
+    autoLock: boolean;
+    lockTimeout: number;
+}
+
+interface AppSettings {
+    autoSync: boolean;
+    notifications: boolean;
+    notificationSound: boolean;
+    shortcuts: ShortcutItem[];
+}
+
+interface ShortcutItem {
+    name: string;
+    url: string;
+    icon: string;
+}
+
+export interface Settings {
+    ui: UISettings;
+    nostr: NostrSettings;
+    security: SecuritySettings;
+    app: AppSettings;
+}
+
+export const DEFAULT_SETTINGS: Settings = {
+    ui: {
+        theme: 'system',
+        isDarkMode: false,
+        compactMode: false,
+        showClock: true,
+        showLogo: true,
+        showSearchBox: true,
+        showShortcuts: true,
+        showProfile: true,
+        language: 'en'
+    },
+    nostr: {
+        publicKey: '',
+        privateKey: '',
+        defaultRelays: [
+            'wss://relay.damus.io',
+            'wss://nos.lol',
+            'wss://relay.nostr.band'
+        ],
+        profileName: ''
+    },
+    security: {
+        privacyMode: false,
+        encryptData: true,
+        autoLock: true,
+        lockTimeout: 30 // minutes
+    },
+    app: {
+        autoSync: true,
+        notifications: true,
+        notificationSound: true,
+        shortcuts: []
+    }
+};

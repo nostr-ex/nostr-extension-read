@@ -8,6 +8,8 @@ import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import Box from '@mui/material/Box';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 interface ShortcutsModalProps {
   onClose: () => void;
@@ -17,13 +19,15 @@ interface ShortcutsModalProps {
 
 export default function ShortcutsModal({ onClose, onAddShortcut, editingShortcut }: ShortcutsModalProps) {
   const [name, setName] = useState(editingShortcut?.name || '');
-  const [url, setUrl] = useState(editingShortcut?.url || '');
+  const [url, setUrl] = useState(editingShortcut?.url ? new URL(editingShortcut.url).href : 'https://');
   const [icon, setIcon] = useState(editingShortcut?.icon || '');
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (editingShortcut) {
+      const urlObj = new URL(editingShortcut.url);
       setName(editingShortcut.name);
-      setUrl(editingShortcut.url);
+      setUrl(urlObj.href);
       setIcon(editingShortcut.icon);
     }
   }, [editingShortcut]);
@@ -32,41 +36,50 @@ export default function ShortcutsModal({ onClose, onAddShortcut, editingShortcut
     try {
       const cleanUrl = url.startsWith('http') ? url : `https://${url}`;
       const domain = new URL(cleanUrl).hostname;
-      
       const iconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-      
       const response = await fetch(cleanUrl);
       const html = await response.text();
       const doc = new DOMParser().parseFromString(html, 'text/html');
       let title = doc.title || domain;
-      
       title = title.split('|')[0].split('-')[0].trim();
-
       setName(title);
       setIcon(iconUrl);
     } catch (error) {
       console.error('Error fetching site info:', error);
-      try {
-        const domain = new URL(url).hostname.replace('www.', '');
-        setName(domain);
-        setIcon(`https://www.google.com/s2/favicons?domain=${domain}&sz=64`);
-      } catch (e) {
-        console.error('Error parsing URL:', e);
-      }
+      setIcon('');
     }
   };
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newUrl = e.target.value;
-    setUrl(newUrl);
-    if (newUrl && !editingShortcut) {
-      fetchSiteInfo(newUrl);
+    setUrl(e.target.value);
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
     }
+    setTypingTimeout(setTimeout(() => {
+      fetchSiteInfo(e.target.value);
+    }, 1000));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAddShortcut({ name, url, icon });
+    const fullUrl = url.startsWith('http') ? url : `https://${url}`;
+    if (!icon) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.font = '48px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(name.charAt(0).toUpperCase(), canvas.width / 2, canvas.height / 2);
+        setIcon(canvas.toDataURL());
+      }
+    }
+    onAddShortcut({ name, url: fullUrl, icon });
     onClose();
   };
 
@@ -90,21 +103,20 @@ export default function ShortcutsModal({ onClose, onAddShortcut, editingShortcut
       <form onSubmit={handleSubmit}>
         <DialogContent>
           <TextField
-            autoFocus
-            margin="dense"
-            label="Shortcut Name"
-            fullWidth
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <TextField
             margin="dense"
             label="URL"
             type="url"
             fullWidth
             value={url}
             onChange={handleUrlChange}
+            required
+          />
+          <TextField
+            margin="dense"
+            label="Shortcut Name"
+            fullWidth
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             required
           />
           <TextField
@@ -127,8 +139,10 @@ export default function ShortcutsModal({ onClose, onAddShortcut, editingShortcut
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button type="submit" variant="contained" color="primary">
+          <Button onClick={onClose} startIcon={<CancelIcon />} color="secondary">
+            Cancel
+          </Button>
+          <Button type="submit" startIcon={<SaveIcon />} variant="contained" color="primary">
             {editingShortcut ? 'Save Changes' : 'Add Shortcut'}
           </Button>
         </DialogActions>

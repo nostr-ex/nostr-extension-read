@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { getGreeting } from '../utils/system';
+import { useNostr } from '../hooks/useNostr';
 import type { Settings } from '../types/settings';
 
 interface ClockProps {
@@ -11,16 +12,24 @@ interface ClockProps {
 
 export default function Clock({ show, settings }: ClockProps) {
   const [time, setTime] = useState(new Date());
+  const { profile, isLoading } = useNostr();
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  if (!show) return null;
+  const displayName = useMemo(() => {
+    if (isLoading) return 'Loading...';
+    if (!profile) return settings?.nostr?.publicKey?.slice(0, 8) || 'User';
+    return profile.name || 
+           profile.displayName || 
+           profile.nip05 || 
+           settings?.nostr?.publicKey?.slice(0, 8) || 
+           'User';
+  }, [profile, settings?.nostr?.publicKey, isLoading]);
 
-  // Directly use settings.userName instead of local state
-  const displayName = settings.userName || 'User';
+  if (!show) return null;
 
   return (
     <Box sx={{ textAlign: 'center' }}>

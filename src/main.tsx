@@ -8,6 +8,9 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import './index.css';
 import App from './App';
+import Profile from './components/Profile'; // Import Profile component
+import { useNostr } from './hooks/useNostr'; // Import useNostr hook
+import ErrorBoundary from './components/ErrorBoundary'; // Import ErrorBoundary component
 
 function Root() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -32,14 +35,26 @@ function Root() {
     document.body.classList.remove('dark-mode');
   }
 
+  const { profile } = useNostr(); // Use the useNostr hook to get the profile
+
   return (
     <React.StrictMode>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <App isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+        <Profile 
+          image={profile?.image || '/default-profile.png'} 
+          onSignOut={() => console.log('Signed out')} 
+        /> {/* Add Profile component */}
       </ThemeProvider>
     </React.StrictMode>
   );
 }
 
-createRoot(document.getElementById('root')!).render(<Root />);
+createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <ErrorBoundary>
+      <Root />
+    </ErrorBoundary>
+  </React.StrictMode>
+);

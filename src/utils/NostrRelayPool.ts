@@ -56,7 +56,8 @@ class NostrClient {
                 throw new Error('Invalid public key');
             }
             const user = this.ndk.getUser({ pubkey: normalizedPubkey });
-            await user.fetchProfile();
+            const profile = await user.fetchProfile();
+            console.log('Fetched profile:', profile); // اضافه کردن لاگ برای بررسی
             return user;
         } catch (error) {
             console.error('Error fetching user profile:', error);
