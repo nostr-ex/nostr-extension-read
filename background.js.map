@@ -1,0 +1,1 @@
+{"version":3,"file":"background.js","sources":["../src/background.ts"],"sourcesContent":["// Basic background script for extension functionality\nconsole.log('NostrEx Background Script Running');\n\n// Handle extension-specific functionality here\nexport {};\n"],"names":[],"mappings":"AACA,QAAQ,IAAI,mCAAmC"}
